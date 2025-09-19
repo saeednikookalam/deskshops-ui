@@ -18,14 +18,10 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const result = await authService.sendOtp({ phone_number: phoneNumber });
+      const result = await authService.sendOtp({ phone: phoneNumber });
 
       if (result.success) {
         setStep("otp");
-        // Show development code if available
-        if (result.code) {
-          alert(`کد توسعه: ${result.code}`);
-        }
       } else {
         setError(result.message || "خطا در ارسال کد");
       }
@@ -43,7 +39,7 @@ export default function LoginPage() {
 
     try {
       const result = await authService.verifyOtp({
-        phone_number: phoneNumber,
+        phone: phoneNumber,
         otp_code: otpCode,
       });
 
@@ -65,14 +61,10 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const result = await authService.sendOtp({ phone_number: phoneNumber });
+      const result = await authService.sendOtp({ phone: phoneNumber });
 
       if (result.success) {
         alert("کد مجدداً ارسال شد");
-        // Show development code if available
-        if (result.code) {
-          alert(`کد توسعه: ${result.code}`);
-        }
       } else {
         setError(result.message || "خطا در ارسال مجدد کد");
       }
@@ -141,17 +133,17 @@ export default function LoginPage() {
                   کد تأیید
                 </h2>
                 <p className="text-sm text-body-color dark:text-dark-6">
-                  کد ۵ رقمی ارسال شده به شماره {phoneNumber} را وارد کنید
+                  کد ۴ رقمی ارسال شده به شماره {phoneNumber} را وارد کنید
                 </p>
               </div>
 
               <InputGroup
                 label="کد تأیید"
                 type="text"
-                placeholder="12345"
+                placeholder="1234"
                 required
                 value={otpCode}
-                handleChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                handleChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
                 name="otp"
                 className="text-center"
               />
@@ -168,7 +160,7 @@ export default function LoginPage() {
                   variant="primary"
                   shape="rounded"
                   className="w-full"
-                  disabled={loading || otpCode.length !== 5}
+                  disabled={loading || otpCode.length !== 4}
                   type="submit"
                 />
 
