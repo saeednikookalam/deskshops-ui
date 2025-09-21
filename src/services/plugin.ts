@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://127.0.0.1:8000';
+import { apiClient } from '@/lib/api-client';
 
 export interface Plugin {
   id?: number;
@@ -33,46 +33,8 @@ export interface PluginStatsResponse {
 }
 
 class PluginService {
-  private getAuthHeaders() {
-    const token = localStorage.getItem('access_token');
-    const tokenType = localStorage.getItem('token_type') || 'Bearer';
-
-    // Ensure Bearer is capitalized
-    const normalizedTokenType = tokenType.charAt(0).toUpperCase() + tokenType.slice(1).toLowerCase();
-
-    console.log('Auth Debug:', {
-      token: token ? 'exists' : 'missing',
-      originalTokenType: tokenType,
-      normalizedTokenType
-    });
-
-    if (!token) {
-      console.warn('No access token found in localStorage');
-      return {
-        'Content-Type': 'application/json',
-      };
-    }
-
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `${normalizedTokenType} ${token}`,
-    };
-  }
-
   async getPluginsList(page: number = 1, perPage: number = 20): Promise<PluginListResponse> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/plugins/list?page=${page}&per_page=${perPage}`, {
-        method: 'GET',
-        headers: this.getAuthHeaders(),
-        signal: AbortSignal.timeout(10000),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+    const data = await apiClient.get(`/api/plugins/list?page=${page}&per_page=${perPage}`);
 
     // Transform API response to match our interface
     const plugins: Plugin[] = data.plugins ? data.plugins.map((plugin: any) => ({
@@ -93,70 +55,16 @@ class PluginService {
       updated_at: plugin.updated_at,
     })) : [];
 
-      return {
-        plugins,
-        total: data.total_count || plugins.length,
-        page: page,
-        per_page: perPage,
-      };
-    } catch (error) {
-      // Try without authentication if token is invalid
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/plugins/list?page=${page}&per_page=${perPage}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          signal: AbortSignal.timeout(10000),
-        });
-
-        if (!response.ok) {
-          throw error; // Re-throw original error
-        }
-
-        const data = await response.json();
-
-        const plugins: Plugin[] = data.plugins ? data.plugins.map((plugin: any) => ({
-          id: plugin.id,
-          name: plugin.name,
-          display_name: plugin.display_name || plugin.name,
-          description: plugin.description,
-          version: plugin.version,
-          author: plugin.author,
-          status: plugin.is_active ? 'active' : 'inactive',
-          is_active: plugin.is_active,
-          user_count: plugin.user_count || 0,
-          monthly_price: plugin.monthly_price,
-          yearly_price: plugin.yearly_price,
-          logo_url: plugin.logo_url,
-          has_subscription: plugin.has_subscription || false,
-          created_at: plugin.created_at,
-          updated_at: plugin.updated_at,
-        })) : [];
-
-        return {
-          plugins,
-          total: data.total_count || plugins.length,
-          page: page,
-          per_page: perPage,
-        };
-      } catch {
-        throw error; // Re-throw original error
-      }
-    }
+    return {
+      plugins,
+      total: data.total_count || plugins.length,
+      page: page,
+      per_page: perPage,
+    };
   }
 
   async getPluginDetails(pluginName: string): Promise<Plugin> {
-    const response = await fetch(`${API_BASE_URL}/api/plugins/${encodeURIComponent(pluginName)}`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-      signal: AbortSignal.timeout(10000),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
-    }
-
-    const plugin = await response.json();
+    const plugin = await apiClient.get(`/api/plugins/${encodeURIComponent(pluginName)}`);
 
     return {
       id: plugin.id,
@@ -174,52 +82,18 @@ class PluginService {
   }
 
   async getPluginStats(): Promise<PluginStatsResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/plugins/stats`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-      signal: AbortSignal.timeout(10000),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
+    return await apiClient.get('/api/plugins/stats');
   }
 
   async getUserSubscriptions(): Promise<{ plugin_ids: number[] }> {
-    const response = await fetch(`${API_BASE_URL}/api/subscriptions/my-subscriptions`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-      signal: AbortSignal.timeout(10000),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
+    return await apiClient.get('/api/subscriptions/my-subscriptions');
   }
 
   async createSubscription(pluginName: string, planType: 'monthly' | 'yearly'): Promise<{ success: boolean; message: string }> {
-    const response = await fetch(`${API_BASE_URL}/api/subscriptions/create`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify({
-        plugin_name: pluginName,
-        plan_type: planType
-      }),
-      signal: AbortSignal.timeout(10000),
+    return await apiClient.post('/api/subscriptions/create', {
+      plugin_name: pluginName,
+      plan_type: planType
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
   }
 
   async getPluginsWithSubscriptionStatus(): Promise<PluginListResponse> {

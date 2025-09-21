@@ -1,4 +1,5 @@
-const API_BASE_URL = 'http://127.0.0.1:8000';
+import { apiClient } from '@/lib/api-client';
+import { saveTokens, clearTokens } from '@/lib/token-manager';
 
 export interface SendOtpRequest {
   phone: string;
@@ -20,63 +21,56 @@ export interface VerifyOtpResponse {
   success: boolean;
   message: string;
   access_token?: string;
+  refresh_token?: string;
   token_type?: string;
 }
 
 class AuthService {
   async sendOtp(data: SendOtpRequest): Promise<SendOtpResponse> {
-    const response = await fetch(`${API_BASE_URL}/auth/send-otp`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-      signal: AbortSignal.timeout(10000), // 10 second timeout
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
+    return await apiClient.authRequest('/auth/send-otp', data);
   }
 
   async verifyOtp(data: VerifyOtpRequest): Promise<VerifyOtpResponse> {
-    const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-      signal: AbortSignal.timeout(10000), // 10 second timeout
-    });
+    const result = await apiClient.authRequest('/auth/verify-otp', data);
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
-    }
-
-    const result = await response.json();
-
-    // Store tokens in localStorage and cookie if login successful
+    // Store tokens in both localStorage and cookie if login successful
     if (result.success && result.access_token) {
-      localStorage.setItem('access_token', result.access_token);
-      localStorage.setItem('token_type', result.token_type || 'bearer');
-
-      // Set cookie for middleware
-      document.cookie = `access_token=${result.access_token}; path=/; max-age=86400; SameSite=Lax`;
+      saveTokens(result.access_token, result.token_type || 'Bearer', result.refresh_token);
     }
 
     return result;
   }
 
-  logout() {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('token_type');
+  async logout(): Promise<void> {
+    try {
+      // Call logout endpoint if authenticated
+      if (this.isAuthenticated()) {
+        await apiClient.post('/auth/logout');
+      }
+    } catch (error) {
+      // Even if logout API fails, clear local tokens
+      console.warn('Logout API failed, but clearing local tokens:', error);
+    } finally {
+      this.clearTokensLocal();
+    }
+  }
 
-    // Remove cookie
-    document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  async logoutAll(): Promise<void> {
+    try {
+      // Call logout all endpoint if authenticated
+      if (this.isAuthenticated()) {
+        await apiClient.post('/auth/logout-all');
+      }
+    } catch (error) {
+      // Even if logout API fails, clear local tokens
+      console.warn('Logout all API failed, but clearing local tokens:', error);
+    } finally {
+      this.clearTokensLocal();
+    }
+  }
+
+  private clearTokensLocal(): void {
+    clearTokens();
   }
 
   isAuthenticated(): boolean {
@@ -85,6 +79,14 @@ class AuthService {
 
   getToken(): string | null {
     return localStorage.getItem('access_token');
+  }
+
+  async getCurrentUser(): Promise<any> {
+    return await apiClient.get('/auth/whoami');
+  }
+
+  async getUserSessions(): Promise<any> {
+    return await apiClient.get('/auth/sessions');
   }
 }
 

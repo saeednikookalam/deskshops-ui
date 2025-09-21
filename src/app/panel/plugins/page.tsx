@@ -87,7 +87,7 @@ export default function PluginsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(8)].map((_, i) => (
             <div
               key={i}
@@ -136,7 +136,7 @@ export default function PluginsPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {plugins.map((plugin) => (
               <PluginCard
                 key={plugin.id || plugin.name}
@@ -157,7 +157,7 @@ export default function PluginsPage() {
           {hasMore && (
             <div ref={loadingRef} className="py-8">
               {loadingMore ? (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {[...Array(4)].map((_, i) => (
                     <div
                       key={i}

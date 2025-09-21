@@ -58,8 +58,8 @@ export function PluginCard({
   return (
     <div
       className={cn(
-        "rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark transition-all hover:shadow-lg h-full flex flex-col cursor-pointer relative",
-        hasSubscription && "ring-2 ring-green ring-opacity-50"
+        "rounded-[10px] bg-white p-4 shadow-1 dark:bg-gray-dark transition-all hover:shadow-lg h-full flex flex-col cursor-pointer relative",
+        hasSubscription && "ring-1 ring-green/30"
       )}
       onClick={onCardClick}
     >
@@ -75,44 +75,45 @@ export function PluginCard({
         </div>
       )}
 
-      {/* Logo and Title - Fixed Height */}
-      <div className="flex items-start gap-3 mb-4 h-12">
+      {/* Logo and Title - Reduced Height */}
+      <div className="flex items-start gap-3 mb-3 h-10">
         <div className="text-primary flex-shrink-0">
-          <Icon className="w-10 h-10" />
+          <Icon className="w-8 h-8" />
         </div>
         <div className="flex-1 min-h-0">
-          <h3 className="text-lg font-bold text-dark dark:text-white line-clamp-2 leading-6">{name}</h3>
+          <h3 className="text-base font-bold text-dark dark:text-white line-clamp-2 leading-5">{name}</h3>
         </div>
       </div>
 
-      {/* Description - Fixed Height */}
-      <div className="mb-4 h-16 flex items-start">
-        <p className="text-sm text-body-color dark:text-dark-6 leading-relaxed line-clamp-3">
-          {description ? truncateDescription(description) : 'توضیحاتی ارائه نشده است.'}
+      {/* Description - Reduced Height */}
+      <div className="mb-3 h-12 flex items-start">
+        <p className="text-sm text-body-color dark:text-dark-6 leading-relaxed line-clamp-2">
+          {description ? truncateDescription(description, 100) : 'توضیحاتی ارائه نشده است.'}
         </p>
       </div>
 
-      {/* Pricing - Fixed Height */}
-      <div className="mb-4 h-16 flex items-center">
+      {/* Pricing - Adjusted Height */}
+      <div className="mb-3 flex items-center">
         {hasSubscription ? (
-          <div className="w-full p-3 bg-green-light-6 dark:bg-green/10 rounded-lg border border-green/20">
+          <div className="w-full p-2 bg-green-light-6 dark:bg-green/10 rounded-lg border border-green/20">
             <div className="flex items-center justify-center text-green">
-              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
-              <span className="font-medium">اشتراک فعال</span>
+              <span className="font-medium text-sm">اشتراک فعال</span>
             </div>
           </div>
         ) : (
-          <div className="w-full p-3 bg-gray-2 dark:bg-dark-2 rounded-lg">
-            <div className="space-y-1">
-              <div className="flex justify-between items-center text-sm text-body-color dark:text-dark-6">
-                <span>ماهانه</span>
-                <span className="font-medium">{monthlyPrice ? formatPrice(monthlyPrice) : '-'}</span>
+          <div className="w-full p-2 bg-gray-2 dark:bg-dark-2 rounded-lg">
+            <div className="flex justify-between items-center text-xs text-body-color dark:text-dark-6">
+              <div className="text-center flex-1">
+                <div>ماهانه</div>
+                <div className="font-medium text-dark dark:text-white">{monthlyPrice ? formatPrice(monthlyPrice) : '-'}</div>
               </div>
-              <div className="flex justify-between items-center text-sm text-body-color dark:text-dark-6">
-                <span>سالانه</span>
-                <span className="font-medium">{yearlyPrice ? formatPrice(yearlyPrice) : '-'}</span>
+              <div className="w-px h-8 bg-stroke dark:bg-dark-3 mx-2"></div>
+              <div className="text-center flex-1">
+                <div>سالانه</div>
+                <div className="font-medium text-dark dark:text-white">{yearlyPrice ? formatPrice(yearlyPrice) : '-'}</div>
               </div>
             </div>
           </div>
