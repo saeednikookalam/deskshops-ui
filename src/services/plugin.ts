@@ -32,12 +32,34 @@ export interface PluginStatsResponse {
   total_subscriptions: number;
 }
 
+interface ApiPluginResponse {
+  id?: number;
+  name: string;
+  display_name?: string;
+  description?: string;
+  version?: string;
+  author?: string;
+  is_active?: boolean;
+  user_count?: number;
+  monthly_price?: string;
+  yearly_price?: string;
+  logo_url?: string;
+  has_subscription?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface ApiPluginListResponse {
+  plugins?: ApiPluginResponse[];
+  total_count?: number;
+}
+
 class PluginService {
   async getPluginsList(page: number = 1, perPage: number = 20): Promise<PluginListResponse> {
-    const data = await apiClient.get(`/api/plugins/list?page=${page}&per_page=${perPage}`);
+    const data = await apiClient.get<ApiPluginListResponse>(`/api/plugins/list?page=${page}&per_page=${perPage}`);
 
     // Transform API response to match our interface
-    const plugins: Plugin[] = data.plugins ? data.plugins.map((plugin: any) => ({
+    const plugins: Plugin[] = data.plugins ? data.plugins.map((plugin: ApiPluginResponse) => ({
       id: plugin.id,
       name: plugin.name,
       display_name: plugin.display_name || plugin.name,
@@ -64,7 +86,7 @@ class PluginService {
   }
 
   async getPluginDetails(pluginName: string): Promise<Plugin> {
-    const plugin = await apiClient.get(`/api/plugins/${encodeURIComponent(pluginName)}`);
+    const plugin = await apiClient.get<ApiPluginResponse>(`/api/plugins/${encodeURIComponent(pluginName)}`);
 
     return {
       id: plugin.id,
@@ -116,7 +138,7 @@ class PluginService {
           ...pluginsResponse,
           plugins: pluginsWithStatus
         };
-      } catch (error) {
+      } catch {
         // If subscription check fails, return plugins without subscription status
         return pluginsResponse;
       }

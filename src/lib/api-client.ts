@@ -24,15 +24,17 @@ class ApiClient {
 
     // فورس ریدایرکت به لاگین
     if (typeof window !== 'undefined') {
-      window.location.replace('/login');
+      // استفاده از setTimeout برای اطمینان از اینکه پاک‌سازی کامل شده
+      setTimeout(() => {
+        window.location.replace('/login');
+      }, 100);
     }
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
     // اگر 401 گرفتی، توکن رو حذف کن و ریدایرکت کن
     if (response.status === 401) {
-      this.clearTokensAndRedirect();
-      throw new Error('Authentication required');
+        this.clearTokensAndRedirect();
     }
 
     if (!response.ok) {
@@ -48,6 +50,7 @@ class ApiClient {
         method: 'GET',
         headers: this.getAuthHeaders(),
         signal: AbortSignal.timeout(10000),
+        cache: 'no-store',
       });
 
       return this.handleResponse<T>(response);
@@ -55,8 +58,12 @@ class ApiClient {
       // اگر CORS یا network error، احتمالاً توکن منقضی شده
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
         if (typeof window !== 'undefined' && getToken()) {
-          this.clearTokensAndRedirect();
-          throw new Error('Token expired, redirecting to login');
+          try {
+            this.clearTokensAndRedirect();
+          } catch (clearError) {
+            console.error('Error during token cleanup:', clearError);
+          }
+          return Promise.reject(new Error('Token expired, redirecting to login'));
         }
       }
       throw error;
@@ -70,14 +77,19 @@ class ApiClient {
         headers: this.getAuthHeaders(),
         body: body ? JSON.stringify(body) : undefined,
         signal: AbortSignal.timeout(10000),
+        cache: 'no-store',
       });
 
       return this.handleResponse<T>(response);
     } catch (error) {
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
         if (typeof window !== 'undefined' && getToken()) {
-          this.clearTokensAndRedirect();
-          throw new Error('Token expired, redirecting to login');
+          try {
+            this.clearTokensAndRedirect();
+          } catch (clearError) {
+            console.error('Error during token cleanup:', clearError);
+          }
+          return Promise.reject(new Error('Token expired, redirecting to login'));
         }
       }
       throw error;
@@ -91,6 +103,7 @@ class ApiClient {
       headers: { 'Content-Type': 'application/json' },
       body: body ? JSON.stringify(body) : undefined,
       signal: AbortSignal.timeout(10000),
+      cache: 'no-store',
     });
 
     if (!response.ok) {
