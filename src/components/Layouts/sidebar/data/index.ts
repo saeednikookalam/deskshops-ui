@@ -1,6 +1,21 @@
 import * as Icons from "../icons";
+import { type MenuPlugin } from "@/lib/plugin-menu-manager";
+import { DynamicIcon } from "@/components/ui/dynamic-icon";
 
-export const NAV_DATA = [
+export interface NavItem {
+  title: string;
+  icon: React.ComponentType<{ className?: string }> | typeof DynamicIcon;
+  url?: string;
+  items: NavItem[];
+  iconSrc?: string;
+}
+
+export interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+export const STATIC_NAV_DATA: NavSection[] = [
   {
     label: "",
     items: [
@@ -31,3 +46,35 @@ export const NAV_DATA = [
     ],
   },
 ];
+
+export function generateNavData(pluginMenus: MenuPlugin[]): NavSection[] {
+  const staticData = [...STATIC_NAV_DATA];
+
+  // If no plugin menus, return static data
+  if (pluginMenus.length === 0) {
+    return staticData;
+  }
+
+  // Create plugin menu items
+  const pluginMenuItems: NavItem[] = pluginMenus.map((plugin) => ({
+    title: plugin.title,
+    icon: DynamicIcon,
+    iconSrc: plugin.icon,
+    url: plugin.path,
+    items: [],
+  }));
+
+  // Add plugin menus to the main section (same as static menus)
+  const updatedStaticData = [...staticData];
+  if (updatedStaticData[0]) {
+    updatedStaticData[0] = {
+      ...updatedStaticData[0],
+      items: [...updatedStaticData[0].items, ...pluginMenuItems],
+    };
+  }
+
+  return updatedStaticData;
+}
+
+// Legacy export for backward compatibility
+export const NAV_DATA = STATIC_NAV_DATA;

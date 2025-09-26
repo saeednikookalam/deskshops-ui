@@ -16,6 +16,11 @@ export interface Plugin {
   has_subscription?: boolean;
   created_at?: string;
   updated_at?: string;
+  // Menu related fields
+  menu_title?: string;
+  menu_icon?: string;
+  menu_path?: string;
+  menu_order?: number;
 }
 
 export interface PluginListResponse {
@@ -47,6 +52,11 @@ interface ApiPluginResponse {
   has_subscription?: boolean;
   created_at?: string;
   updated_at?: string;
+  // Menu fields from API
+  menu_title?: string;
+  menu_icon?: string;
+  menu_path?: string;
+  menu_order?: number;
 }
 
 interface ApiPluginListResponse {
@@ -75,6 +85,11 @@ class PluginService {
       has_subscription: plugin.has_subscription || false,
       created_at: plugin.created_at,
       updated_at: plugin.updated_at,
+      // Menu fields
+      menu_title: plugin.menu_title,
+      menu_icon: plugin.menu_icon,
+      menu_path: plugin.menu_path,
+      menu_order: plugin.menu_order,
     })) : [];
 
     return {

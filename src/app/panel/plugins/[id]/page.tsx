@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui-elements/button";
 import { StatusModal } from "@/components/ui/status-modal";
 import { pluginService, type Plugin } from "@/services/plugin";
+import { usePluginMenu } from "@/hooks/use-plugin-menu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, use } from "react";
@@ -10,6 +11,7 @@ import { useEffect, useState, use } from "react";
 export default function PluginDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
+  const { addPluginMenu } = usePluginMenu();
   const [plugin, setPlugin] = useState<Plugin | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,8 +86,19 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
       if (result.success) {
         setPurchaseStatus('success');
         setStatusMessage(`اشتراک ${duration === 'monthly' ? 'ماهانه' : 'سالانه'} با موفقیت خریداری شد!`);
+
         // Update plugin subscription status
-        setPlugin(prev => prev ? { ...prev, has_subscription: true } : null);
+        const updatedPlugin = { ...plugin!, has_subscription: true };
+        setPlugin(updatedPlugin);
+
+        // Add plugin menu if it has menu data and is active
+        if (plugin?.id && plugin.status === 'active') {
+          try {
+            await addPluginMenu(plugin.id);
+          } catch (error) {
+            console.error('Error adding plugin menu:', error);
+          }
+        }
       } else {
         setPurchaseStatus('error');
         setStatusMessage(result.message || 'خطا در خرید اشتراک');

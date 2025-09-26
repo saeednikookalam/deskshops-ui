@@ -1,5 +1,6 @@
 import { apiClient } from '@/lib/api-client';
 import { saveTokens, clearTokens } from '@/lib/token-manager';
+import { pluginMenuManager } from '@/lib/plugin-menu-manager';
 
 export interface SendOtpRequest {
   phone: string;
@@ -71,6 +72,10 @@ class AuthService {
 
   private clearTokensLocal(): void {
     clearTokens();
+    // Clear plugin menus when logging out
+    if (typeof window !== 'undefined') {
+      pluginMenuManager.clearMenus();
+    }
   }
 
   isAuthenticated(): boolean {

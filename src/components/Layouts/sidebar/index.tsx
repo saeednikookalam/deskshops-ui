@@ -3,15 +3,19 @@
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { NAV_DATA } from "./data";
+import { generateNavData, type NavSection } from "./data";
 import { ArrowLeftIcon, ChevronUp } from "./icons";
 import { MenuItem } from "./menu-item";
 import { useSidebarContext } from "./sidebar-context";
+import { usePluginMenu } from "@/hooks/use-plugin-menu";
+import { DynamicIcon } from "@/components/ui/dynamic-icon";
 
 export function Sidebar() {
   const pathname = usePathname();
   const { setIsOpen, isOpen, isMobile, toggleSidebar } = useSidebarContext();
+  const { menuPlugins } = usePluginMenu();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [navData, setNavData] = useState<NavSection[]>([]);
 
   const toggleExpanded = (title: string) => {
     setExpandedItems((prev) => (prev.includes(title) ? [] : [title]));
@@ -22,9 +26,14 @@ export function Sidebar() {
     // );
   };
 
+  // Update nav data when plugin menus change
+  useEffect(() => {
+    setNavData(generateNavData(menuPlugins));
+  }, [menuPlugins]);
+
   useEffect(() => {
     // Keep collapsible open, when it's subpage is active
-    NAV_DATA.some((section) => {
+    navData.some((section) => {
       return section.items.some((item) => {
         return item.items.some((subItem) => {
           if (subItem.url === pathname) {
@@ -38,7 +47,7 @@ export function Sidebar() {
         });
       });
     });
-  }, [pathname]);
+  }, [pathname, navData]);
 
   return (
     <>
@@ -81,13 +90,15 @@ export function Sidebar() {
 
           {/* Navigation */}
           <div className="custom-scrollbar mt-6 flex-1 overflow-y-auto pr-3 min-[850px]:mt-4">
-            {NAV_DATA.map((section) => (
-              <div key={section.label} className="mb-6">
-                <h2 className="mb-5 text-sm font-medium text-dark-4 dark:text-dark-6">
-                  {section.label}
-                </h2>
+            {navData.map((section) => (
+              <div key={section.label || 'main'} className="mb-6">
+                {section.label && (
+                  <h2 className="mb-5 text-sm font-medium text-dark-4 dark:text-dark-6">
+                    {section.label}
+                  </h2>
+                )}
 
-                <nav role="navigation" aria-label={section.label}>
+                <nav role="navigation" aria-label={section.label || 'Main navigation'}>
                   <ul className="space-y-2">
                     {section.items.map((item) => (
                       <li key={item.title}>
@@ -99,10 +110,17 @@ export function Sidebar() {
                               )}
                               onClick={() => toggleExpanded(item.title)}
                             >
-                              <item.icon
-                                className="size-6 shrink-0"
-                                aria-hidden="true"
-                              />
+                              {item.icon === DynamicIcon ? (
+                                <DynamicIcon
+                                  src={item.iconSrc}
+                                  className="size-6 shrink-0"
+                                />
+                              ) : (
+                                <item.icon
+                                  className="size-6 shrink-0"
+                                  aria-hidden="true"
+                                />
+                              )}
 
                               <span>{item.title}</span>
 
@@ -138,8 +156,8 @@ export function Sidebar() {
                         ) : (
                           (() => {
                             const href =
-                              "url" in item
-                                ? item.url + ""
+                              "url" in item && item.url
+                                ? item.url
                                 : "/" +
                                   item.title.toLowerCase().split(" ").join("-");
 
@@ -150,10 +168,17 @@ export function Sidebar() {
                                 href={href}
                                 isActive={pathname === href}
                               >
-                                <item.icon
-                                  className="size-6 shrink-0"
-                                  aria-hidden="true"
-                                />
+                                {item.icon === DynamicIcon ? (
+                                  <DynamicIcon
+                                    src={item.iconSrc}
+                                    className="size-6 shrink-0"
+                                  />
+                                ) : (
+                                  <item.icon
+                                    className="size-6 shrink-0"
+                                    aria-hidden="true"
+                                  />
+                                )}
 
                                 <span>{item.title}</span>
                               </MenuItem>
