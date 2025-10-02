@@ -37,3 +37,19 @@ export function getToken(): string | null {
 export function hasToken(): boolean {
   return !!getToken();
 }
+
+export function getUserIdFromToken(): string | null {
+  const token = getToken();
+  if (!token) return null;
+
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+
+    const payload = JSON.parse(atob(parts[1]));
+    return payload.user_id || payload.sub || payload.id || null;
+  } catch (error) {
+    console.error('Error parsing token:', error);
+    return null;
+  }
+}

@@ -58,8 +58,7 @@ export function generateNavData(pluginMenus: MenuPlugin[]): NavSection[] {
   // Create plugin menu items
   const pluginMenuItems: NavItem[] = pluginMenus.map((plugin) => ({
     title: plugin.title,
-    icon: DynamicIcon,
-    iconSrc: plugin.icon,
+    icon: Icons.PieChart,
     url: plugin.path,
     items: [],
   }));

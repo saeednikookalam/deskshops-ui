@@ -356,6 +356,10 @@ const config: Config = {
           "0%, 100%": { transform: "translateY(100%)" },
           "50%": { transform: "translateY(0)" },
         },
+        "slide-in-right": {
+          "0%": { transform: "translateX(100%)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
       },
       animation: {
         linspin: "linspin 1568.2353ms linear infinite",
@@ -368,6 +372,7 @@ const config: Config = {
         rotating: "rotating 30s linear infinite",
         topbottom: "topbottom 60s infinite alternate linear",
         bottomtop: "bottomtop 60s infinite alternate linear",
+        "slide-in-right": "slide-in-right 0.3s ease-out",
         "spin-1.5": "spin 1.5s linear infinite",
         "spin-2": "spin 2s linear infinite",
         "spin-3": "spin 3s linear infinite",

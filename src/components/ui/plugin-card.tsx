@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui-elements/button";
 import { cn } from "@/lib/utils";
 import type { JSX, SVGProps } from "react";
+import Image from "next/image";
 
 type PluginStatus = 'active' | 'inactive' | 'disabled';
 
@@ -15,6 +16,7 @@ type PropsType = {
   monthlyPrice?: string;
   yearlyPrice?: string;
   hasSubscription?: boolean;
+  logoUrl?: string;
   icon?: (props: SVGProps<SVGSVGElement>) => JSX.Element;
   onViewDetails?: () => void;
   onSubscribe?: () => void;
@@ -37,13 +39,16 @@ export function PluginCard({
   monthlyPrice,
   yearlyPrice,
   hasSubscription = false,
+  logoUrl,
   icon: Icon = defaultIcon,
   onViewDetails,
   onSubscribe,
   onCardClick
 }: PropsType) {
   const formatPrice = (price: string) => {
-    return parseFloat(price).toLocaleString('fa-IR') + ' تومان';
+    // Convert Rial to Toman by dividing by 10
+    const tomanPrice = parseFloat(price) / 10;
+    return tomanPrice.toLocaleString('fa-IR') + ' تومان';
   };
 
   const shouldShowSubscribeButton = status === 'active' && !hasSubscription;
@@ -63,31 +68,50 @@ export function PluginCard({
       )}
       onClick={onCardClick}
     >
-      {/* Subscription Badge */}
-      {hasSubscription && (
-        <div className="absolute top-4 left-4 bg-green text-white px-2 py-1 rounded-full text-xs font-medium z-10">
-          <div className="flex items-center gap-1">
-            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-            </svg>
-            فعال
+      {/* Logo and Title */}
+      <div className="flex items-center gap-3 mb-3">
+        <div className="flex-shrink-0">
+          {logoUrl ? (
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-2 dark:bg-dark-2 flex items-center justify-center">
+              <Image
+                src={logoUrl}
+                alt={name}
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const parent = e.currentTarget.parentElement;
+                  if (parent) {
+                    parent.innerHTML = '<div class="text-primary w-8 h-8 flex items-center justify-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/></svg></div>';
+                  }
+                }}
+              />
+            </div>
+          ) : (
+            <div className="text-primary">
+              <Icon className="w-8 h-8" />
+            </div>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base font-bold text-dark dark:text-white truncate">{name}</h3>
+        </div>
+        {hasSubscription && (
+          <div className="flex-shrink-0 bg-green text-white px-2 py-1 rounded-full text-xs font-medium">
+            <div className="flex items-center gap-1">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              فعال
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* Logo and Title - Reduced Height */}
-      <div className="flex items-start gap-3 mb-3 h-10">
-        <div className="text-primary flex-shrink-0">
-          <Icon className="w-8 h-8" />
-        </div>
-        <div className="flex-1 min-h-0">
-          <h3 className="text-base font-bold text-dark dark:text-white line-clamp-2 leading-5">{name}</h3>
-        </div>
+        )}
       </div>
 
       {/* Description - Reduced Height */}
       <div className="mb-3 h-12 flex items-start">
-        <p className="text-sm text-body-color dark:text-dark-6 leading-relaxed line-clamp-2">
+        <p className="text-base text-body-color dark:text-dark-6 leading-relaxed line-clamp-2">
           {description ? truncateDescription(description, 100) : 'توضیحاتی ارائه نشده است.'}
         </p>
       </div>
@@ -121,7 +145,7 @@ export function PluginCard({
       </div>
 
       {/* Stats: Active Installs and Version - Fixed Height */}
-      <div className="flex items-center justify-between text-xs text-body-color dark:text-dark-6 h-4">
+      <div className="flex items-center justify-between text-sm text-body-color dark:text-dark-6 h-5">
         <div>
           <span>نصب فعال: {userCount !== undefined ? userCount.toLocaleString('fa-IR') : '0'}</span>
         </div>

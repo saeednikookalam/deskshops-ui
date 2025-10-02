@@ -148,6 +148,7 @@ export default function PluginsPage() {
                 monthlyPrice={plugin.monthly_price}
                 yearlyPrice={plugin.yearly_price}
                 hasSubscription={plugin.has_subscription}
+                logoUrl={plugin.logo_url}
                 onCardClick={() => handleCardClick(plugin)}
               />
             ))}

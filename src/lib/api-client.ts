@@ -35,6 +35,7 @@ class ApiClient {
     // اگر 401 گرفتی، توکن رو حذف کن و ریدایرکت کن
     if (response.status === 401) {
         this.clearTokensAndRedirect();
+        throw new Error('Unauthorized');
     }
 
     if (!response.ok) {
@@ -74,6 +75,32 @@ class ApiClient {
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: body ? JSON.stringify(body) : undefined,
+        signal: AbortSignal.timeout(10000),
+        cache: 'no-store',
+      });
+
+      return this.handleResponse<T>(response);
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        if (typeof window !== 'undefined' && getToken()) {
+          try {
+            this.clearTokensAndRedirect();
+          } catch (clearError) {
+            console.error('Error during token cleanup:', clearError);
+          }
+          return Promise.reject(new Error('Token expired, redirecting to login'));
+        }
+      }
+      throw error;
+    }
+  }
+
+  async put<T = unknown>(endpoint: string, body?: unknown): Promise<T> {
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'PUT',
         headers: this.getAuthHeaders(),
         body: body ? JSON.stringify(body) : undefined,
         signal: AbortSignal.timeout(10000),

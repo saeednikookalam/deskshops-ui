@@ -45,7 +45,7 @@ interface ApiPluginResponse {
   version?: string;
   author?: string;
   is_active?: boolean;
-  user_count?: number;
+  total_installations?: number;
   monthly_price?: string;
   yearly_price?: string;
   logo_url?: string;
@@ -78,7 +78,7 @@ class PluginService {
       author: plugin.author,
       status: plugin.is_active ? 'active' : 'inactive',
       is_active: plugin.is_active,
-      user_count: plugin.user_count || 0,
+      user_count: plugin.total_installations || 0,
       monthly_price: plugin.monthly_price,
       yearly_price: plugin.yearly_price,
       logo_url: plugin.logo_url,
@@ -112,7 +112,7 @@ class PluginService {
       author: plugin.author,
       status: plugin.is_active ? 'active' : 'inactive',
       is_active: plugin.is_active,
-      user_count: plugin.user_count || 0,
+      user_count: plugin.total_installations || 0,
       created_at: plugin.created_at,
       updated_at: plugin.updated_at,
     };
