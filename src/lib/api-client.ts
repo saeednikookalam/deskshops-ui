@@ -139,6 +139,43 @@ class ApiClient {
 
     return await response.json();
   }
+
+  // برای آپلود فایل (FormData)
+  async uploadFile<T = unknown>(endpoint: string, formData: FormData, timeout: number = 30000): Promise<T> {
+    try {
+      const headers: Record<string, string> = {};
+
+      // فقط Authorization header رو اضافه می‌کنیم، Content-Type رو خود fetch تنظیم می‌کنه
+      if (typeof window !== 'undefined') {
+        const token = getToken();
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+      }
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers,
+        body: formData,
+        signal: AbortSignal.timeout(timeout),
+        cache: 'no-store',
+      });
+
+      return this.handleResponse<T>(response);
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        if (typeof window !== 'undefined' && getToken()) {
+          try {
+            this.clearTokensAndRedirect();
+          } catch (clearError) {
+            console.error('Error during token cleanup:', clearError);
+          }
+          return Promise.reject(new Error('Token expired, redirecting to login'));
+        }
+      }
+      throw error;
+    }
+  }
 }
 
 export const apiClient = new ApiClient();

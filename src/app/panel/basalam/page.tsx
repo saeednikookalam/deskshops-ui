@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { basalamService, type BasalamConnectionStatus } from "@/services/basalam";
-import { Alert } from "@/components/basalam/Alert";
+import { Alert } from "@/components/common/Alert";
 import { SettingToggle } from "@/components/basalam/SettingToggle";
-import { Toast } from "@/components/basalam/Toast";
+import { Toast } from "@/components/common/Toast";
 import { apiClient } from "@/lib/api-client";
 
 export default function BasalamPage() {
