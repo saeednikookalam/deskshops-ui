@@ -147,6 +147,7 @@ export function ImportsList({
         <Table>
           <TableHeader>
             <TableRow className="border-none bg-[#F7F9FC] dark:bg-dark-2 [&>th]:py-4 [&>th]:text-sm [&>th]:font-semibold [&>th]:text-dark [&>th]:dark:text-white">
+              <TableHead className="w-20">شناسه</TableHead>
               <TableHead className="min-w-[140px]">نوع فایل</TableHead>
               <TableHead>تاریخ</TableHead>
               <TableHead className="text-center">کل سطرها</TableHead>
@@ -163,6 +164,12 @@ export function ImportsList({
                 key={importItem.import_id}
                 className="border-[#eee] dark:border-dark-3"
               >
+                <TableCell>
+                  <span className="font-mono text-sm font-medium text-dark dark:text-white">
+                    #{importItem.import_id}
+                  </span>
+                </TableCell>
+
                 <TableCell>
                   <div className="flex items-center gap-2.5">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-2 text-body-color dark:bg-dark-2 dark:text-dark-6">

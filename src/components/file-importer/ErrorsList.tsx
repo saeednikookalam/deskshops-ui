@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ImportError, fileImporterService } from "@/services/file-importer";
+import { Portal } from "@/components/common/Portal";
 import {
   Table,
   TableBody,
@@ -74,14 +75,15 @@ export function ErrorsList({ importId, onClose }: ErrorsListProps) {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      onClick={onClose}
-    >
+    <Portal>
       <div
-        className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        onClick={onClose}
       >
+        <div
+          className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-stroke bg-white p-6 dark:border-dark-3 dark:bg-gray-dark">
           <div>
@@ -264,6 +266,7 @@ export function ErrorsList({ importId, onClose }: ErrorsListProps) {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </Portal>
   );
 }

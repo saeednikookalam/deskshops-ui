@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { fileImporterService, Import } from "@/services/file-importer";
 import { UploadForm } from "@/components/file-importer/UploadForm";
 import { ImportsList } from "@/components/file-importer/ImportsList";
@@ -23,7 +23,7 @@ export default function FileImporterPage() {
   const [showErrorsModal, setShowErrorsModal] = useState(false);
 
   // Auto-refresh for processing imports
-  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const addToast = useCallback((type: "success" | "error", message: string) => {
     const id = Date.now().toString();
@@ -45,14 +45,14 @@ export default function FileImporterPage() {
       );
 
       // Start auto-refresh if there are processing imports
-      if (hasProcessing && !refreshInterval) {
+      if (hasProcessing && !refreshIntervalRef.current) {
         const interval = setInterval(() => {
           loadImports();
         }, 5000); // Refresh every 5 seconds
-        setRefreshInterval(interval);
-      } else if (!hasProcessing && refreshInterval) {
-        clearInterval(refreshInterval);
-        setRefreshInterval(null);
+        refreshIntervalRef.current = interval;
+      } else if (!hasProcessing && refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
       }
     } catch (error) {
       console.error("Error loading imports:", error);
@@ -60,15 +60,15 @@ export default function FileImporterPage() {
     } finally {
       setLoading(false);
     }
-  }, [refreshInterval, addToast]);
+  }, [addToast]);
 
   useEffect(() => {
     loadImports();
 
     // Cleanup interval on unmount
     return () => {
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

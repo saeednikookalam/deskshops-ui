@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Portal } from "@/components/common/Portal";
 import { generateNavData, type NavSection } from "./data";
 import { ArrowLeftIcon, ChevronUp } from "./icons";
 import { MenuItem } from "./menu-item";
@@ -53,11 +54,13 @@ export function Sidebar() {
     <>
       {/* Mobile Overlay */}
       {isMobile && isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 transition-opacity duration-300"
-          onClick={() => setIsOpen(false)}
-          aria-hidden="true"
-        />
+        <Portal>
+          <div
+            className="fixed inset-0 z-40 bg-black/50 transition-opacity duration-300"
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
+        </Portal>
       )}
 
       <aside
