@@ -4,8 +4,6 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { fileImporterService, Import } from "@/services/file-importer";
 import { UploadForm } from "@/components/file-importer/UploadForm";
 import { ImportsList } from "@/components/file-importer/ImportsList";
-import { ImportDetail } from "@/components/file-importer/ImportDetail";
-import { ErrorsList } from "@/components/file-importer/ErrorsList";
 import { Alert } from "@/components/common/Alert";
 import { Toast } from "@/components/common/Toast";
 
@@ -16,11 +14,6 @@ export default function FileImporterPage() {
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState<{ type: AlertType; message: string } | null>(null);
   const [toasts, setToasts] = useState<{ id: string; type: "success" | "error"; message: string }[]>([]);
-
-  // Modal states
-  const [selectedImportId, setSelectedImportId] = useState<number | null>(null);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showErrorsModal, setShowErrorsModal] = useState(false);
 
   // Auto-refresh for processing imports
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -87,31 +80,6 @@ export default function FileImporterPage() {
     addToast("error", error);
   };
 
-  const handleViewDetail = (importId: number) => {
-    setSelectedImportId(importId);
-    setShowDetailModal(true);
-  };
-
-  const handleViewErrors = (importId: number) => {
-    setSelectedImportId(importId);
-    setShowErrorsModal(true);
-  };
-
-  const handleCloseDetailModal = () => {
-    setShowDetailModal(false);
-    setSelectedImportId(null);
-  };
-
-  const handleCloseErrorsModal = () => {
-    setShowErrorsModal(false);
-    setSelectedImportId(null);
-  };
-
-  const handleViewErrorsFromDetail = () => {
-    setShowDetailModal(false);
-    setShowErrorsModal(true);
-  };
-
   return (
     <div className="space-y-6">
       {/* Alert */}
@@ -149,25 +117,7 @@ export default function FileImporterPage() {
       <ImportsList
         imports={imports}
         loading={loading}
-        onViewDetail={handleViewDetail}
-        onViewErrors={handleViewErrors}
       />
-
-      {/* Modals */}
-      {showDetailModal && selectedImportId && (
-        <ImportDetail
-          importId={selectedImportId}
-          onClose={handleCloseDetailModal}
-          onViewErrors={handleViewErrorsFromDetail}
-        />
-      )}
-
-      {showErrorsModal && selectedImportId && (
-        <ErrorsList
-          importId={selectedImportId}
-          onClose={handleCloseErrorsModal}
-        />
-      )}
     </div>
   );
 }

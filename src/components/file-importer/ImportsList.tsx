@@ -13,6 +13,7 @@ import {
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/fa";
+import Link from "next/link";
 
 dayjs.extend(relativeTime);
 dayjs.locale("fa");
@@ -20,15 +21,11 @@ dayjs.locale("fa");
 interface ImportsListProps {
   imports: Import[];
   loading: boolean;
-  onViewDetail: (importId: number) => void;
-  onViewErrors: (importId: number) => void;
 }
 
 export function ImportsList({
   imports,
   loading,
-  onViewDetail,
-  onViewErrors,
 }: ImportsListProps) {
   const getStatusBadgeClasses = (status: number): string => {
     const baseClasses = "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium";
@@ -218,57 +215,32 @@ export function ImportsList({
                 </TableCell>
 
                 <TableCell>
-                  <div className="flex items-center justify-start gap-2">
-                    <button
-                      onClick={() => onViewDetail(importItem.import_id)}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition hover:bg-primary/20"
-                      title="مشاهده جزئیات"
+                  <Link
+                    href={`/panel/file_importer/${importItem.import_id}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition hover:bg-primary/20"
+                    title="مشاهده جزئیات"
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
-                      </svg>
-                      جزئیات
-                    </button>
-
-                    {importItem.error_count > 0 && (
-                      <button
-                        onClick={() => onViewErrors(importItem.import_id)}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-red/10 px-3 py-1.5 text-xs font-medium text-red transition hover:bg-red/20"
-                        title="مشاهده خطاها"
-                      >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                          />
-                        </svg>
-                        خطاها
-                      </button>
-                    )}
-                  </div>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    </svg>
+                    جزئیات
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}
