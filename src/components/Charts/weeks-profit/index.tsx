@@ -8,8 +8,8 @@ type PropsType = {
   className?: string;
 };
 
-export async function WeeksProfit({ className, timeFrame }: PropsType) {
-  const data = await getWeeksProfitData(timeFrame);
+export async function WeeksProfit({ className, timeFrame = "weekly" }: PropsType) {
+  const data = await getWeeksProfitData();
 
   return (
     <div

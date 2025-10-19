@@ -209,7 +209,7 @@ export function PluginDetailsModal({ plugin, isOpen, onClose, onSubscribe }: Pro
               )}
               <Button
                 label="بستن"
-                variant="outline"
+                variant="outlineDark"
                 shape="rounded"
                 onClick={onClose}
               />

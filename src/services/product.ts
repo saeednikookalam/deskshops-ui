@@ -9,7 +9,7 @@ export interface Product {
   stock: number;
   status: 'active' | 'inactive' | 'out_of_stock';
   source: string;
-  source_logo?: string;
+  source_logo?: string | null;
   created_at?: string;
   updated_at?: string;
 }

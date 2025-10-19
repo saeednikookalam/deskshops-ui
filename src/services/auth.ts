@@ -26,13 +26,26 @@ export interface VerifyOtpResponse {
   token_type?: string;
 }
 
+export interface User {
+  id: string;
+  phone: string;
+  [key: string]: unknown;
+}
+
+export interface UserSession {
+  id: string;
+  created_at: string;
+  last_activity: string;
+  [key: string]: unknown;
+}
+
 class AuthService {
   async sendOtp(data: SendOtpRequest): Promise<SendOtpResponse> {
-    return await apiClient.authRequest('/auth/send-otp', data);
+    return await apiClient.authRequest<SendOtpResponse>('/auth/send-otp', data);
   }
 
   async verifyOtp(data: VerifyOtpRequest): Promise<VerifyOtpResponse> {
-    const result = await apiClient.authRequest('/auth/verify-otp', data);
+    const result = await apiClient.authRequest<VerifyOtpResponse>('/auth/verify-otp', data);
 
     // Store tokens in both localStorage and cookie if login successful
     if (result.success && result.access_token) {
@@ -86,11 +99,11 @@ class AuthService {
     return localStorage.getItem('access_token');
   }
 
-  async getCurrentUser(): Promise<any> {
+  async getCurrentUser(): Promise<User> {
     return await apiClient.get('/auth/whoami');
   }
 
-  async getUserSessions(): Promise<any> {
+  async getUserSessions(): Promise<UserSession[]> {
     return await apiClient.get('/auth/sessions');
   }
 }

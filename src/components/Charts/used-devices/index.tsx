@@ -12,7 +12,7 @@ export async function UsedDevices({
   timeFrame = "monthly",
   className,
 }: PropsType) {
-  const data = await getDevicesUsedData(timeFrame);
+  const data = await getDevicesUsedData();
 
   return (
     <div

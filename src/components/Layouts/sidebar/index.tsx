@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Portal } from "@/components/common/Portal";
 import { generateNavData, type NavSection } from "./data";
 import { ArrowLeftIcon, ChevronUp } from "./icons";
@@ -18,14 +18,14 @@ export function Sidebar() {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [navData, setNavData] = useState<NavSection[]>([]);
 
-  const toggleExpanded = (title: string) => {
+  const toggleExpanded = useCallback((title: string) => {
     setExpandedItems((prev) => (prev.includes(title) ? [] : [title]));
 
     // Uncomment the following line to enable multiple expanded items
     // setExpandedItems((prev) =>
     //   prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title],
     // );
-  };
+  }, []);
 
   // Update nav data when plugin menus change
   useEffect(() => {
@@ -48,7 +48,7 @@ export function Sidebar() {
         });
       });
     });
-  }, [pathname, navData]);
+  }, [pathname, navData, expandedItems, toggleExpanded]);
 
   return (
     <>
@@ -146,7 +146,7 @@ export function Sidebar() {
                                   <li key={subItem.title} role="none">
                                     <MenuItem
                                       as="link"
-                                      href={subItem.url}
+                                      href={subItem.url || '#'}
                                       isActive={pathname === subItem.url}
                                     >
                                       <span>{subItem.title}</span>

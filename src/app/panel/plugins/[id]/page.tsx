@@ -5,12 +5,10 @@ import { StatusModal } from "@/components/ui/status-modal";
 import { pluginService, type Plugin } from "@/services/plugin";
 import { usePluginMenu } from "@/hooks/use-plugin-menu";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState, use } from "react";
 
 export default function PluginDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const router = useRouter();
   const { addPluginMenu } = usePluginMenu();
   const [plugin, setPlugin] = useState<Plugin | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,14 +25,14 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
       try {
         setLoading(true);
         const response = await pluginService.getPluginsWithSubscriptionStatus();
-        const foundPlugin = response.plugins.find(p => p.id.toString() === resolvedParams.id);
+        const foundPlugin = response.plugins.find(p => p.id?.toString() === resolvedParams.id);
 
         if (foundPlugin) {
           setPlugin(foundPlugin);
         } else {
           setError('پلاگین مورد نظر یافت نشد');
         }
-      } catch (err) {
+      } catch {
         setError('خطا در بارگذاری اطلاعات پلاگین');
       } finally {
         setLoading(false);
@@ -169,7 +167,7 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
               <p className="text-body-color dark:text-dark-6 mb-8 text-lg">{error}</p>
               <div className="flex gap-4 justify-center">
                 <Link href="/panel/plugins">
-                  <Button label="بازگشت به پلاگین‌ها" variant="outline" shape="rounded" />
+                  <Button label="بازگشت به پلاگین‌ها" variant="outlineDark" shape="rounded" />
                 </Link>
                 <Button
                   label="تلاش مجدد"

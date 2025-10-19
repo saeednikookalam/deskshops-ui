@@ -7,7 +7,7 @@ export interface Order {
   total_amount: number;
   status: 'pending' | 'processing' | 'completed' | 'cancelled';
   source: string;
-  source_logo?: string;
+  source_logo?: string | null;
   created_at: string;
   updated_at?: string;
 }

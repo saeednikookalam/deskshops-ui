@@ -123,6 +123,31 @@ class ApiClient {
     }
   }
 
+  async delete<T = unknown>(endpoint: string): Promise<T> {
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'DELETE',
+        headers: this.getAuthHeaders(),
+        signal: AbortSignal.timeout(10000),
+        cache: 'no-store',
+      });
+
+      return this.handleResponse<T>(response);
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        if (typeof window !== 'undefined' && getToken()) {
+          try {
+            this.clearTokensAndRedirect();
+          } catch (clearError) {
+            console.error('Error during token cleanup:', clearError);
+          }
+          return Promise.reject(new Error('Token expired, redirecting to login'));
+        }
+      }
+      throw error;
+    }
+  }
+
   // برای ریکوئست‌های احراز هویت (بدون header توکن)
   async authRequest<T = unknown>(endpoint: string, body?: unknown): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
