@@ -5,6 +5,12 @@ import InputGroup from "@/components/FormElements/InputGroup";
 import { authService } from "@/services/auth";
 import { useState } from "react";
 
+const enamadBadgeMarkup = `
+  <a referrerpolicy="origin" target="_blank" href="https://trustseal.enamad.ir/?id=662692&Code=kwnqf3BAnm7MUO1IZM6ZbM7GdFaFeF8C" rel="noreferrer">
+    <img referrerpolicy="origin" src="https://trustseal.enamad.ir/logo.aspx?id=662692&Code=kwnqf3BAnm7MUO1IZM6ZbM7GdFaFeF8C" alt="" style="cursor:pointer" code="kwnqf3BAnm7MUO1IZM6ZbM7GdFaFeF8C" />
+  </a>
+`;
+
 export default function LoginPage() {
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -199,6 +205,11 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
+
+      <div
+        className="fixed bottom-4 left-4"
+        dangerouslySetInnerHTML={{ __html: enamadBadgeMarkup }}
+      />
     </div>
   );
 }
