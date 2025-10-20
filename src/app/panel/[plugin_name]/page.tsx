@@ -1,11 +1,13 @@
-import type { PageProps } from "next";
-
 // این تابع به Next.js می‌گوید که کدام plugin_name ها معتبر هستند
 export async function generateStaticParams() {
   return [];
 }
 
-export default async function PluginPage({ params }: PageProps<{ plugin_name: string }>) {
+type PluginPageProps = {
+  params: Promise<{ plugin_name: string }>;
+};
+
+export default async function PluginPage({ params }: PluginPageProps) {
   const { plugin_name } = await params;
 
 
