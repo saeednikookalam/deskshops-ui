@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";
+import tailwindcssRtl from "tailwindcss-rtl";
 
 const config: Config = {
   content: ["./src/**/*.{js,jsx,tsx}"],
@@ -383,7 +384,7 @@ const config: Config = {
     },
   },
   plugins: [
-    require('tailwindcss-rtl'),
+    tailwindcssRtl,
   ],
 };
 export default config;

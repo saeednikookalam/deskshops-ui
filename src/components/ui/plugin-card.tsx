@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui-elements/button";
 import { cn } from "@/lib/utils";
 import type { JSX, SVGProps } from "react";
 import Image from "next/image";
@@ -18,8 +17,6 @@ type PropsType = {
   hasSubscription?: boolean;
   logoUrl?: string;
   icon?: (props: SVGProps<SVGSVGElement>) => JSX.Element;
-  onViewDetails?: () => void;
-  onSubscribe?: () => void;
   onCardClick?: () => void;
 };
 
@@ -41,8 +38,6 @@ export function PluginCard({
   hasSubscription = false,
   logoUrl,
   icon: Icon = defaultIcon,
-  onViewDetails,
-  onSubscribe,
   onCardClick
 }: PropsType) {
   const formatPrice = (price: string) => {
@@ -50,10 +45,6 @@ export function PluginCard({
     const tomanPrice = parseFloat(price) / 10;
     return tomanPrice.toLocaleString('fa-IR') + ' تومان';
   };
-
-  const shouldShowSubscribeButton = status === 'active' && !hasSubscription;
-  const shouldShowActiveLabel = status === 'active' && hasSubscription;
-  const shouldShowNothing = status === 'inactive';
 
   const truncateDescription = (text: string, maxLength: number = 150) => {
     if (text.length <= maxLength) return text;
@@ -66,6 +57,7 @@ export function PluginCard({
         "rounded-[10px] bg-white p-4 shadow-1 dark:bg-gray-dark transition-all hover:shadow-lg h-full flex flex-col cursor-pointer relative",
         hasSubscription && "ring-1 ring-green/30"
       )}
+      data-status={status}
       onClick={onCardClick}
     >
       {/* Logo and Title */}

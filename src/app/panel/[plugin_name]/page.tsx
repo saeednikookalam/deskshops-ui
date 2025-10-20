@@ -1,12 +1,10 @@
-import { notFound, redirect } from 'next/navigation';
-
 // این تابع به Next.js می‌گوید که کدام plugin_name ها معتبر هستند
 export async function generateStaticParams() {
   return [];
 }
 
-export default async function PluginPage({ params }: { params: Promise<{ plugin_name: string }> }) {
-  const { plugin_name } = await params;
+export default async function PluginPage({ params }: { params: { plugin_name: string } }) {
+  const { plugin_name } = params;
 
 
   return (

@@ -25,7 +25,8 @@ export default function LoginPage() {
       } else {
         setError(result.message || "خطا در ارسال کد");
       }
-    } catch (error) {
+    } catch (err) {
+      console.error("Error sending OTP:", err);
       setError("خطا در ارتباط با سرور");
     } finally {
       setLoading(false);
@@ -49,7 +50,8 @@ export default function LoginPage() {
       } else {
         setError(result.message || "کد تأیید نادرست است");
       }
-    } catch (error) {
+    } catch (err) {
+      console.error("Error verifying OTP:", err);
       setError("خطا در ارتباط با سرور");
     } finally {
       setLoading(false);
@@ -68,7 +70,8 @@ export default function LoginPage() {
       } else {
         setError(result.message || "خطا در ارسال مجدد کد");
       }
-    } catch (error) {
+    } catch (err) {
+      console.error("Error resending OTP:", err);
       setError("خطا در ارتباط با سرور");
     } finally {
       setLoading(false);

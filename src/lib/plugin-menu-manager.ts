@@ -1,4 +1,4 @@
-import { pluginService, type Plugin } from '@/services/plugin';
+import { pluginService } from '@/services/plugin';
 
 export interface MenuPlugin {
   id: number;
@@ -112,6 +112,9 @@ export class PluginMenuManager {
    */
   public async addPluginMenu(pluginId: number): Promise<void> {
     try {
+      if (this.hasPluginMenu(pluginId)) {
+        return;
+      }
       // Force refresh to get latest data
       await this.forceRefresh();
     } catch (error) {

@@ -53,20 +53,28 @@ export function ImportErrorsTable({ importId, totalErrors }: ImportErrorsTablePr
     }
   }, [importId, offset, loading, hasMore, totalErrors]);
 
+  useEffect(() => {
+    setErrors([]);
+    setOffset(0);
+    setHasMore(true);
+    setInitialLoading(true);
+    initialLoadDone.current = false;
+  }, [importId, totalErrors]);
+
   // Initial load
   useEffect(() => {
     if (!initialLoadDone.current) {
       initialLoadDone.current = true;
-      loadMore();
+      void loadMore();
     }
-  }, []);
+  }, [loadMore]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
-          loadMore();
+          void loadMore();
         }
       },
       { threshold: 0.1 }
@@ -81,6 +89,7 @@ export function ImportErrorsTable({ importId, totalErrors }: ImportErrorsTablePr
       if (currentTarget) {
         observer.unobserve(currentTarget);
       }
+      observer.disconnect();
     };
   }, [hasMore, loading, loadMore]);
 

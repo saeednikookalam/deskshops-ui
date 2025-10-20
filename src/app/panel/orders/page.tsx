@@ -69,13 +69,12 @@ export default function OrdersPage() {
       const fakeOrders = generateFakeOrders(pageNum, 20);
       const total = 100; // Total fake orders
 
-      if (append) {
-        setOrders(prev => [...prev, ...fakeOrders]);
-      } else {
-        setOrders(fakeOrders);
-      }
-
-      const totalLoaded = append ? orders.length + fakeOrders.length : fakeOrders.length;
+      let totalLoaded = 0;
+      setOrders(prev => {
+        const nextOrders = append ? [...prev, ...fakeOrders] : fakeOrders;
+        totalLoaded = nextOrders.length;
+        return nextOrders;
+      });
       setHasMore(totalLoaded < total && fakeOrders.length > 0);
 
     } catch (error) {
@@ -85,14 +84,18 @@ export default function OrdersPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [orders.length]);
-
-  useEffect(() => {
-    loadOrders(1);
   }, []);
 
   useEffect(() => {
+    loadOrders(1);
+  }, [loadOrders]);
+
+  useEffect(() => {
     if (!hasMore || loadingMore || loading) return;
+
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
 
     observerRef.current = new IntersectionObserver(
       (entries) => {

@@ -40,7 +40,7 @@ class ApiClient {
         }
     }
 
-    private async parseBodySafely(response: Response): Promise<any> {
+    private async parseBodySafely(response: Response): Promise<unknown> {
         const text = await response.text().catch(() => '');
         if (!text) return null;
         try {
@@ -59,10 +59,13 @@ class ApiClient {
 
         if (!response.ok) {
             const data = await this.parseBodySafely(response);
-            const msg =
-                (data && typeof data === 'object' && (data as any).message) ||
-                (typeof data === 'string' ? data : null) ||
-                `HTTP error ${response.status}`;
+            const messageFromObject =
+                typeof data === 'object' && data !== null && 'message' in data &&
+                typeof (data as { message?: unknown }).message === 'string'
+                    ? (data as { message: string }).message
+                    : null;
+            const messageFromString = typeof data === 'string' ? data : null;
+            const msg = messageFromObject || messageFromString || `HTTP error ${response.status}`;
             throw new ApiError(msg, response.status, data);
         }
 
@@ -100,7 +103,7 @@ class ApiClient {
             });
 
             return this.handleResponse<T>(response);
-        } catch (error: any) {
+        } catch (error: unknown) {
             // ❌ دیگر اینجا لاگ‌اوت نمی‌کنیم
             if (error instanceof DOMException && error.name === 'TimeoutError') {
                 throw new ApiError('درخواست شما منقضی شد. لطفاً دوباره تلاش کنید.');
@@ -116,7 +119,10 @@ class ApiClient {
             // اگر ApiError از handleResponse آمده، همان را پاس بده
             if (error instanceof ApiError) throw error;
             // خطای ناشناخته
-            throw new ApiError(error?.message || 'خطای ناشناخته رخ داد');
+            if (error instanceof Error && error.message) {
+                throw new ApiError(error.message);
+            }
+            throw new ApiError('خطای ناشناخته رخ داد');
         }
     }
 
@@ -148,7 +154,7 @@ class ApiClient {
             });
 
             return this.handleResponse<T>(response);
-        } catch (error: any) {
+        } catch (error: unknown) {
             if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
                 const offline = typeof navigator !== 'undefined' && navigator && 'onLine' in navigator && !navigator.onLine;
                 const msg = offline
@@ -157,7 +163,10 @@ class ApiClient {
                 throw new ApiError(msg);
             }
             if (error instanceof ApiError) throw error;
-            throw new ApiError(error?.message || 'خطای ناشناخته رخ داد');
+            if (error instanceof Error && error.message) {
+                throw new ApiError(error.message);
+            }
+            throw new ApiError('خطای ناشناخته رخ داد');
         }
     }
 

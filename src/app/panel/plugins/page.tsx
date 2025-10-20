@@ -27,15 +27,15 @@ export default function PluginsPage() {
 
       const response = await pluginService.getPluginsWithSubscriptionStatus();
 
-      if (append) {
-        setPlugins(prev => [...prev, ...response.plugins]);
-      } else {
-        setPlugins(response.plugins);
-      }
+      let totalLoaded = 0;
+      setPlugins(prev => {
+        const nextPlugins = append ? [...prev, ...response.plugins] : response.plugins;
+        totalLoaded = nextPlugins.length;
+        return nextPlugins;
+      });
 
-      // Check if we have more data
-      const totalLoaded = append ? plugins.length + response.plugins.length : response.plugins.length;
-      setHasMore(totalLoaded < (response.total || 0) && response.plugins.length > 0);
+      const totalAvailable = response.total ?? 0;
+      setHasMore(totalLoaded < totalAvailable && response.plugins.length > 0);
 
     } catch (error) {
       console.error('Error loading plugins:', error);
@@ -54,6 +54,10 @@ export default function PluginsPage() {
   // Infinite scroll implementation
   useEffect(() => {
     if (!hasMore || loadingMore) return;
+
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
 
     observerRef.current = new IntersectionObserver(
       (entries) => {

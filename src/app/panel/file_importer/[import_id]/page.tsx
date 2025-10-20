@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { fileImporterService, ImportDetailResponse } from "@/services/file-importer";
 import { ImportDetailHeader } from "@/components/file-importer/ImportDetailHeader";
@@ -15,16 +15,7 @@ export default function ImportDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isNaN(importId)) {
-      router.push("/panel/file_importer");
-      return;
-    }
-
-    loadDetail();
-  }, [importId]);
-
-  const loadDetail = async () => {
+  const loadDetail = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -36,7 +27,16 @@ export default function ImportDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [importId]);
+
+  useEffect(() => {
+    if (isNaN(importId)) {
+      router.push("/panel/file_importer");
+      return;
+    }
+
+    void loadDetail();
+  }, [importId, loadDetail, router]);
 
   if (loading) {
     return (

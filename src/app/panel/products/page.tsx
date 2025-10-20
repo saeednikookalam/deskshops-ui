@@ -66,13 +66,12 @@ export default function ProductsPage() {
       const fakeProducts = generateFakeProducts(pageNum, 20);
       const total = 100; // Total fake products
 
-      if (append) {
-        setProducts(prev => [...prev, ...fakeProducts]);
-      } else {
-        setProducts(fakeProducts);
-      }
-
-      const totalLoaded = append ? products.length + fakeProducts.length : fakeProducts.length;
+      let totalLoaded = 0;
+      setProducts(prev => {
+        const nextProducts = append ? [...prev, ...fakeProducts] : fakeProducts;
+        totalLoaded = nextProducts.length;
+        return nextProducts;
+      });
       setHasMore(totalLoaded < total && fakeProducts.length > 0);
 
     } catch (error) {
@@ -82,14 +81,18 @@ export default function ProductsPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [products.length]);
-
-  useEffect(() => {
-    loadProducts(1);
   }, []);
 
   useEffect(() => {
+    loadProducts(1);
+  }, [loadProducts]);
+
+  useEffect(() => {
     if (!hasMore || loadingMore || loading) return;
+
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
