@@ -16,9 +16,6 @@ export const metadata: Metadata = {
   },
   description:
     "پنل مدیریت دسک شاپس",
-  other: {
-    enamad: "62135478",
-  },
 };
 
 export default function RootLayout({ children }: PropsWithChildren) {
