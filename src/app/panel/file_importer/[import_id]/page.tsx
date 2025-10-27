@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { fileImporterService, ImportDetailResponse } from "@/services/file-importer";
+import { fileImporterService, ImportDetailData } from "@/services/file-importer";
 import { ImportDetailHeader } from "@/components/file-importer/ImportDetailHeader";
 import { ImportErrorsTable } from "@/components/file-importer/ImportErrorsTable";
 
@@ -11,7 +11,7 @@ export default function ImportDetailPage() {
   const router = useRouter();
   const importId = Number(params.import_id);
 
-  const [detail, setDetail] = useState<ImportDetailResponse | null>(null);
+  const [detail, setDetail] = useState<ImportDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { webhookService, type WebhookStatus } from "@/services/webhook";
 import { Alert } from "@/components/common/Alert";
-import { Toast } from "@/components/common/Toast";
+import { showToast } from "@/lib/toast";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 
 export default function WebhookPage() {
@@ -11,7 +11,6 @@ export default function WebhookPage() {
   const [loading, setLoading] = useState(true);
   const [activating, setActivating] = useState(false);
   const [alert, setAlert] = useState<{ type: "success" | "error" | "warning"; message: string } | null>(null);
-  const [toasts, setToasts] = useState<{ id: string; type: "success" | "error"; message: string }[]>([]);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
@@ -28,15 +27,6 @@ export default function WebhookPage() {
       : webhookStatus.apiRoute;
 
     return `${baseUrl}/${urlHash}`;
-  };
-
-  const addToast = (type: "success" | "error", message: string) => {
-    const id = Date.now().toString();
-    setToasts((prev) => [...prev, { id, type, message }]);
-  };
-
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
   const checkWebhookStatus = async () => {
@@ -106,13 +96,13 @@ export default function WebhookPage() {
           apiRoute: response.apiRoute || webhookStatus.apiRoute,
           apiSecretKey: response.apiSecretKey || webhookStatus.apiSecretKey
         });
-        addToast("success", "Webhook مجدداً فعال شد");
+        showToast.success("Webhook مجدداً فعال شد");
       } else {
-        addToast("error", response.message || "خطا در فعال‌سازی webhook");
+        showToast.error(response.message || "خطا در فعال‌سازی webhook");
       }
     } catch (error) {
       console.error("Error activating webhook:", error);
-      addToast("error", "خطا در فعال‌سازی webhook");
+      showToast.error("خطا در فعال‌سازی webhook");
     }
   };
 
@@ -123,13 +113,13 @@ export default function WebhookPage() {
       const response = await webhookService.deactivateWebhook();
       if (response.success) {
         setWebhookStatus({ ...webhookStatus!, isActive: false });
-        addToast("success", "Webhook به صورت موقت غیرفعال شد");
+        showToast.success("Webhook به صورت موقت غیرفعال شد");
       } else {
-        addToast("error", response.message || "خطا در غیرفعال‌سازی webhook");
+        showToast.error(response.message || "خطا در غیرفعال‌سازی webhook");
       }
     } catch (error) {
       console.error("Error deactivating webhook:", error);
-      addToast("error", "خطا در غیرفعال‌سازی webhook");
+      showToast.error("خطا در غیرفعال‌سازی webhook");
     }
   };
 
@@ -137,14 +127,14 @@ export default function WebhookPage() {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedField(fieldName);
-      addToast("success", `${fieldName} کپی شد`);
+      showToast.success(`${fieldName} کپی شد`);
 
       setTimeout(() => {
         setCopiedField(null);
       }, 2000);
     } catch (error) {
       console.error("Error copying to clipboard:", error);
-      addToast("error", "خطا در کپی کردن");
+      showToast.error("خطا در کپی کردن");
     }
   };
 
@@ -257,21 +247,6 @@ export default function WebhookPage() {
           message={alert.message}
           onClose={() => setAlert(null)}
         />
-      )}
-
-      {toasts.length > 0 && (
-        <div className="fixed bottom-4 right-4 z-50 flex flex-col-reverse gap-2">
-          {toasts.map((toast, index) => (
-            <Toast
-              key={toast.id}
-              id={toast.id}
-              type={toast.type}
-              message={toast.message}
-              onClose={removeToast}
-              index={index}
-            />
-          ))}
-        </div>
       )}
 
       <div className="space-y-6">

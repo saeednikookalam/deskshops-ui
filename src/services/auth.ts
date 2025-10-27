@@ -1,30 +1,31 @@
 import { apiClient } from '@/lib/api-client';
 import { saveTokens, clearTokens } from '@/lib/token-manager';
 import { pluginMenuManager } from '@/lib/plugin-menu-manager';
+import { ApiResponse } from '@/types/api';
 
 export interface SendOtpRequest {
   phone: string;
 }
 
-export interface SendOtpResponse {
-  success: boolean;
-  message: string;
+export interface SendOtpData {
   otp?: string;
   expires_in?: number;
 }
+
+export type SendOtpResponse = ApiResponse<SendOtpData>;
 
 export interface VerifyOtpRequest {
   phone: string;
   otp_code: string;
 }
 
-export interface VerifyOtpResponse {
-  success: boolean;
-  message: string;
-  access_token?: string;
+export interface AuthData {
+  access_token: string;
+  token_type: string;
   refresh_token?: string;
-  token_type?: string;
 }
+
+export type VerifyOtpResponse = ApiResponse<AuthData>;
 
 export interface User {
   id: string;
@@ -40,16 +41,20 @@ export interface UserSession {
 }
 
 class AuthService {
-  async sendOtp(data: SendOtpRequest): Promise<SendOtpResponse> {
-    return await apiClient.authRequest<SendOtpResponse>('/auth/send-otp', data);
+  async sendOtp(data: SendOtpRequest): Promise<SendOtpData> {
+    return await apiClient.authRequest<SendOtpData>('/auth/send-otp', data);
   }
 
-  async verifyOtp(data: VerifyOtpRequest): Promise<VerifyOtpResponse> {
-    const result = await apiClient.authRequest<VerifyOtpResponse>('/auth/verify-otp', data);
+  async verifyOtp(data: VerifyOtpRequest): Promise<AuthData> {
+    const result = await apiClient.authRequest<AuthData>('/auth/verify-otp', data);
 
     // Store tokens in both localStorage and cookie if login successful
-    if (result.success && result.access_token) {
-      saveTokens(result.access_token, result.token_type || 'Bearer', result.refresh_token);
+    if (result.access_token) {
+      saveTokens(
+        result.access_token,
+        result.token_type || 'Bearer',
+        result.refresh_token
+      );
     }
 
     return result;

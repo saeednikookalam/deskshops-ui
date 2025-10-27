@@ -1,6 +1,6 @@
 "use client";
 
-import { ImportDetailResponse, fileImporterService } from "@/services/file-importer";
+import { ImportDetailData, fileImporterService } from "@/services/file-importer";
 import { cn } from "@/lib/utils";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -10,7 +10,7 @@ dayjs.extend(relativeTime);
 dayjs.locale("fa");
 
 interface ImportDetailHeaderProps {
-  detail: ImportDetailResponse;
+  detail: ImportDetailData;
 }
 
 export function ImportDetailHeader({ detail }: ImportDetailHeaderProps) {

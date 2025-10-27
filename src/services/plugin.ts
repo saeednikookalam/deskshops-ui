@@ -66,10 +66,10 @@ interface ApiPluginListResponse {
 
 class PluginService {
   async getPluginsList(page: number = 1, perPage: number = 20): Promise<PluginListResponse> {
-    const data = await apiClient.get<ApiPluginListResponse>(`/api/plugins/list?page=${page}&per_page=${perPage}`);
+    const response = await apiClient.get<ApiPluginListResponse>(`/api/plugins/list?page=${page}&per_page=${perPage}`);
 
     // Transform API response to match our interface
-    const plugins: Plugin[] = data.plugins ? data.plugins.map((plugin: ApiPluginResponse) => ({
+    const plugins: Plugin[] = response.plugins ? response.plugins.map((plugin: ApiPluginResponse) => ({
       id: plugin.id,
       name: plugin.name,
       display_name: plugin.display_name || plugin.name,
@@ -94,7 +94,7 @@ class PluginService {
 
     return {
       plugins,
-      total: data.total_count || plugins.length,
+      total: response.total_count || plugins.length,
       page: page,
       per_page: perPage,
     };
@@ -119,15 +119,15 @@ class PluginService {
   }
 
   async getPluginStats(): Promise<PluginStatsResponse> {
-    return await apiClient.get('/api/plugins/stats');
+    return await apiClient.get<PluginStatsResponse>('/api/plugins/stats');
   }
 
   async getUserSubscriptions(): Promise<{ plugin_ids: number[] }> {
-    return await apiClient.get('/api/subscriptions/my-subscriptions');
+    return await apiClient.get<{ plugin_ids: number[] }>('/api/subscriptions/my-subscriptions');
   }
 
-  async createSubscription(pluginName: string, planType: 'monthly' | 'yearly'): Promise<{ success: boolean; message: string }> {
-    return await apiClient.post('/api/subscriptions/create', {
+  async createSubscription(pluginName: string, planType: 'monthly' | 'yearly'): Promise<void> {
+    await apiClient.post('/api/subscriptions/create', {
       plugin_name: pluginName,
       plan_type: planType
     });

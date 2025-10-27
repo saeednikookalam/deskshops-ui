@@ -1,17 +1,17 @@
 import { apiClient } from '@/lib/api-client';
+import { ApiResponse } from '@/types/api';
 
-export interface ImportResponse {
-  success: boolean;
+export interface ImportData {
   import_id?: number | null;
   status: number;
   total_rows: number;
   success_count: number;
   error_count: number;
-  message: string;
 }
 
-export interface ImportDetailResponse {
-  success: boolean;
+export type ImportResponse = ApiResponse<ImportData>;
+
+export interface ImportDetailData {
   import_id: number;
   file_type: string;
   status: number;
@@ -22,18 +22,21 @@ export interface ImportDetailResponse {
   completed_at?: string | null;
 }
 
+export type ImportDetailResponse = ApiResponse<ImportDetailData>;
+
 export interface ImportError {
   row_number: number;
   field: string;
   error_type: number;
 }
 
-export interface ImportErrorsListResponse {
-  success: boolean;
+export interface ImportErrorsListData {
   import_id: number;
   errors: ImportError[];
   total_errors: number;
 }
+
+export type ImportErrorsListResponse = ApiResponse<ImportErrorsListData>;
 
 export interface Import {
   import_id: number;
@@ -55,11 +58,11 @@ class FileImporterService {
   /**
    * Upload a file (CSV, Excel, or JSON)
    */
-  async uploadFile(file: File): Promise<ImportResponse> {
+  async uploadFile(file: File): Promise<ImportData> {
     const formData = new FormData();
     formData.append('file', file);
 
-    return await apiClient.uploadFile<ImportResponse>('/file-importer/upload', formData, 30000);
+    return await apiClient.uploadFile<ImportData>('/file-importer/upload', formData, 30000);
   }
 
   /**
@@ -77,8 +80,8 @@ class FileImporterService {
   /**
    * Get detailed information about a specific import
    */
-  async getImportDetail(importId: number): Promise<ImportDetailResponse> {
-    return await apiClient.get<ImportDetailResponse>(`/file-importer/imports/${importId}`);
+  async getImportDetail(importId: number): Promise<ImportDetailData> {
+    return await apiClient.get<ImportDetailData>(`/file-importer/imports/${importId}`);
   }
 
   /**
@@ -88,8 +91,8 @@ class FileImporterService {
     importId: number,
     limit: number = 100,
     offset: number = 0
-  ): Promise<ImportErrorsListResponse> {
-    return await apiClient.get<ImportErrorsListResponse>(
+  ): Promise<ImportErrorsListData> {
+    return await apiClient.get<ImportErrorsListData>(
       `/file-importer/imports/${importId}/errors?limit=${limit}&offset=${offset}`
     );
   }

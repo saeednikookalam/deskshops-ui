@@ -3,7 +3,11 @@
 import { Button } from "@/components/ui-elements/button";
 import InputGroup from "@/components/FormElements/InputGroup";
 import { authService } from "@/services/auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { handleNumberInput } from "@/lib/number-utils";
+import { showToast } from "@/lib/toast";
+import { hasToken } from "@/lib/token-manager";
 
 const enamadBadgeMarkup = `
   <a referrerpolicy="origin" target="_blank" href="https://trustseal.enamad.ir/?id=662692&Code=kwnqf3BAnm7MUO1IZM6ZbM7GdFaFeF8C" rel="noreferrer">
@@ -12,11 +16,19 @@ const enamadBadgeMarkup = `
 `;
 
 export default function LoginPage() {
+  const router = useRouter();
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Redirect to panel if already logged in
+  useEffect(() => {
+    if (hasToken()) {
+      router.replace('/panel');
+    }
+  }, [router]);
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,10 +38,10 @@ export default function LoginPage() {
     try {
       const result = await authService.sendOtp({ phone: phoneNumber });
 
-      if (result.success) {
-        setStep("otp");
-      } else {
-        setError(result.message || "خطا در ارسال کد");
+      setStep("otp");
+      // نمایش کد OTP برای تست
+      if (result.otp) {
+        showToast.success(`کد تأیید: ${result.otp}`);
       }
     } catch (err) {
       console.error("Error sending OTP:", err);
@@ -45,20 +57,16 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const result = await authService.verifyOtp({
+      await authService.verifyOtp({
         phone: phoneNumber,
         otp_code: otpCode,
       });
 
-      if (result.success) {
-        // Redirect to panel
-        window.location.href = "/panel";
-      } else {
-        setError(result.message || "کد تأیید نادرست است");
-      }
+      // Redirect to panel
+      window.location.href = "/panel";
     } catch (err) {
       console.error("Error verifying OTP:", err);
-      setError("خطا در ارتباط با سرور");
+      setError("کد تأیید نادرست است");
     } finally {
       setLoading(false);
     }
@@ -71,10 +79,11 @@ export default function LoginPage() {
     try {
       const result = await authService.sendOtp({ phone: phoneNumber });
 
-      if (result.success) {
-        alert("کد مجدداً ارسال شد");
+      // نمایش کد OTP برای تست
+      if (result.otp) {
+        showToast.success(`کد مجدداً ارسال شد - کد تأیید: ${result.otp}`);
       } else {
-        setError(result.message || "خطا در ارسال مجدد کد");
+        showToast.success("کد مجدداً ارسال شد");
       }
     } catch (err) {
       console.error("Error resending OTP:", err);
@@ -112,11 +121,11 @@ export default function LoginPage() {
 
               <InputGroup
                 label="شماره موبایل"
-                type="tel"
+                type="text"
                 placeholder="09123456789"
                 required
                 value={phoneNumber}
-                handleChange={(e) => setPhoneNumber(e.target.value)}
+                handleChange={(e) => handleNumberInput(e, setPhoneNumber)}
                 name="phone"
               />
 
@@ -152,7 +161,9 @@ export default function LoginPage() {
                 placeholder="1234"
                 required
                 value={otpCode}
-                handleChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                handleChange={(e) => {
+                  handleNumberInput(e, (value) => setOtpCode(value.slice(0, 4)));
+                }}
                 name="otp"
                 className="text-center"
               />

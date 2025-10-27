@@ -21,10 +21,9 @@ export interface OrderListResponse {
 
 class OrderService {
   async getOrders(page: number = 1, perPage: number = 20): Promise<OrderListResponse> {
-    const data = await apiClient.get<OrderListResponse>(
+    return await apiClient.get<OrderListResponse>(
       `/api/orders/list?page=${page}&per_page=${perPage}`
     );
-    return data;
   }
 
   async getOrderById(id: number): Promise<Order> {
@@ -34,8 +33,8 @@ class OrderService {
   async updateOrderStatus(
     id: number,
     status: Order['status']
-  ): Promise<{ success: boolean; message: string }> {
-    return await apiClient.put(`/api/orders/${id}/status`, { status });
+  ): Promise<void> {
+    await apiClient.put(`/api/orders/${id}/status`, { status });
   }
 }
 

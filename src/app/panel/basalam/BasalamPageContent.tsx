@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { basalamService, type BasalamConnectionStatus } from "@/services/basalam";
 import { Alert } from "@/components/common/Alert";
 import { SettingToggle } from "@/components/basalam/SettingToggle";
-import { Toast } from "@/components/common/Toast";
+import { showToast } from "@/lib/toast";
 import { apiClient } from "@/lib/api-client";
 import Image from "next/image";
 
@@ -15,7 +15,6 @@ export default function BasalamPageContent() {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [alert, setAlert] = useState<{ type: "success" | "error" | "warning"; message: string } | null>(null);
-  const [toasts, setToasts] = useState<{ id: string; type: "success" | "error"; message: string }[]>([]);
 
   // Settings state
   interface Setting {
@@ -28,15 +27,6 @@ export default function BasalamPageContent() {
   }
   const [settings, setSettings] = useState<Setting[]>([]);
   const [loadingSettings, setLoadingSettings] = useState(true);
-
-  const addToast = useCallback((type: "success" | "error", message: string) => {
-    const id = Date.now().toString();
-    setToasts((prev) => [...prev, { id, type, message }]);
-  }, []);
-
-  const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  }, []);
 
   const checkConnectionStatus = useCallback(async () => {
     try {
@@ -58,11 +48,11 @@ export default function BasalamPageContent() {
       setSettings(response.settings);
     } catch (error) {
       console.error("Error loading settings:", error);
-      addToast("error", "خطا در بارگذاری تنظیمات");
+      showToast.error("خطا در بارگذاری تنظیمات");
     } finally {
       setLoadingSettings(false);
     }
-  }, [addToast]);
+  }, []);
 
   useEffect(() => {
     // Check for redirect params from backend
@@ -132,11 +122,11 @@ export default function BasalamPageContent() {
         }
       );
 
-      addToast("success", `${title} ${newStatus ? "فعال" : "غیرفعال"} شد`);
+      showToast.success(`${title} ${newStatus ? "فعال" : "غیرفعال"} شد`);
     } catch (error) {
       // Revert on error
       setSettings(previousSettings);
-      addToast("error", `خطا در تغییر ${title}`);
+      showToast.error(`خطا در تغییر ${title}`);
       console.error("Error updating setting:", error);
     }
   };
@@ -238,21 +228,6 @@ export default function BasalamPageContent() {
           message={alert.message}
           onClose={() => setAlert(null)}
         />
-      )}
-
-      {toasts.length > 0 && (
-        <div className="fixed bottom-4 right-4 z-50 flex flex-col-reverse">
-          {toasts.map((toast, index) => (
-            <Toast
-              key={toast.id}
-              id={toast.id}
-              type={toast.type}
-              message={toast.message}
-              onClose={removeToast}
-              index={index}
-            />
-          ))}
-        </div>
       )}
 
       <div className="space-y-6">

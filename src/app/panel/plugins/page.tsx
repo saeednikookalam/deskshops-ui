@@ -1,6 +1,8 @@
 "use client";
 
 import { PluginCard } from "@/components/ui/plugin-card";
+import { CustomPluginRequestCard } from "@/components/ui/custom-plugin-request-card";
+import { CustomPluginRequestModal } from "@/components/ui/custom-plugin-request-modal";
 import { pluginService, type Plugin } from "@/services/plugin";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useRef } from "react";
@@ -12,7 +14,8 @@ export default function PluginsPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const pageRef = useRef(1);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
 
@@ -25,17 +28,18 @@ export default function PluginsPage() {
       }
       setError("");
 
-      const response = await pluginService.getPluginsWithSubscriptionStatus();
+      const response = await pluginService.getPluginsList(pageNum, 20);
 
-      let totalLoaded = 0;
       setPlugins(prev => {
         const nextPlugins = append ? [...prev, ...response.plugins] : response.plugins;
-        totalLoaded = nextPlugins.length;
+
+        // Calculate total loaded based on the new state
+        const totalAvailable = response.total ?? 0;
+        const totalLoaded = nextPlugins.length;
+        setHasMore(totalLoaded < totalAvailable && response.plugins.length > 0);
+
         return nextPlugins;
       });
-
-      const totalAvailable = response.total ?? 0;
-      setHasMore(totalLoaded < totalAvailable && response.plugins.length > 0);
 
     } catch (error) {
       console.error('Error loading plugins:', error);
@@ -46,10 +50,11 @@ export default function PluginsPage() {
     }
   }, []);
 
-  // Initial load
+  // Initial load - only once
   useEffect(() => {
     loadPlugins(1);
-  }, [loadPlugins]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Infinite scroll implementation
   useEffect(() => {
@@ -61,10 +66,9 @@ export default function PluginsPage() {
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !loadingMore) {
-          const nextPage = page + 1;
-          setPage(nextPage);
-          loadPlugins(nextPage, true);
+        if (entries[0].isIntersecting && !loadingMore && hasMore) {
+          pageRef.current += 1;
+          loadPlugins(pageRef.current, true);
         }
       },
       {
@@ -82,7 +86,8 @@ export default function PluginsPage() {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore, loadingMore, page, loadPlugins]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasMore, loadingMore]);
 
   const handleCardClick = (plugin: Plugin) => {
     router.push(`/panel/plugins/${plugin.id}`);
@@ -92,6 +97,9 @@ export default function PluginsPage() {
     return (
       <div className="space-y-6">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Custom Plugin Request Card - Always First */}
+          <CustomPluginRequestCard onClick={() => setIsRequestModalOpen(true)} />
+
           {[...Array(8)].map((_, i) => (
             <div
               key={i}
@@ -107,6 +115,12 @@ export default function PluginsPage() {
             </div>
           ))}
         </div>
+
+        {/* Modal */}
+        <CustomPluginRequestModal
+          isOpen={isRequestModalOpen}
+          onClose={() => setIsRequestModalOpen(false)}
+        />
       </div>
     );
   }
@@ -118,7 +132,7 @@ export default function PluginsPage() {
           <div className="text-red text-lg mb-4">{error}</div>
           <button
             onClick={() => {
-              setPage(1);
+              pageRef.current = 1;
               loadPlugins(1);
             }}
             className="text-primary hover:underline"
@@ -133,14 +147,22 @@ export default function PluginsPage() {
   return (
     <div className="space-y-6">
       {plugins.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-body-color dark:text-dark-6 text-lg">
-            هیچ پلاگینی یافت نشد
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Custom Plugin Request Card - Always First */}
+          <CustomPluginRequestCard onClick={() => setIsRequestModalOpen(true)} />
+
+          <div className="sm:col-span-2 lg:col-span-3 text-center py-12">
+            <div className="text-body-color dark:text-dark-6 text-lg">
+              هیچ پلاگینی یافت نشد
+            </div>
           </div>
         </div>
       ) : (
         <>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Custom Plugin Request Card - Always First */}
+            <CustomPluginRequestCard onClick={() => setIsRequestModalOpen(true)} />
+
             {plugins.map((plugin) => (
               <PluginCard
                 key={plugin.id || plugin.name}
@@ -187,6 +209,12 @@ export default function PluginsPage() {
           )}
         </>
       )}
+
+      {/* Modal */}
+      <CustomPluginRequestModal
+        isOpen={isRequestModalOpen}
+        onClose={() => setIsRequestModalOpen(false)}
+      />
     </div>
   );
 }

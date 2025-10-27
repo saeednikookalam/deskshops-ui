@@ -38,6 +38,12 @@ export const STATIC_NAV_DATA: NavSection[] = [
         items: [],
       },
       {
+        title: "بخش مالی",
+        icon: Icons.Wallet,
+        url: "/panel/financial",
+        items: [],
+      },
+      {
         title: "برنامک ها",
         icon: Icons.PieChart,
         url: "/panel/plugins",

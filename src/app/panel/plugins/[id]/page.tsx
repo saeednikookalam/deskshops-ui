@@ -4,6 +4,7 @@ import { Button } from "@/components/ui-elements/button";
 import { StatusModal } from "@/components/ui/status-modal";
 import { pluginService, type Plugin } from "@/services/plugin";
 import { usePluginMenu } from "@/hooks/use-plugin-menu";
+import { formatMessage } from "@/lib/message-utils";
 import Link from "next/link";
 import { useEffect, useState, use } from "react";
 
@@ -79,31 +80,28 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
       setStatusMessage('در حال پردازش درخواست خرید...');
       setShowStatusModal(true);
 
-      const result = await pluginService.createSubscription(plugin.name, duration);
+      await pluginService.createSubscription(plugin.name, duration);
 
-      if (result.success) {
-        setPurchaseStatus('success');
-        setStatusMessage(`اشتراک ${duration === 'monthly' ? 'ماهانه' : 'سالانه'} با موفقیت خریداری شد!`);
+      // If no error thrown, it was successful
+      setPurchaseStatus('success');
+      setStatusMessage(`اشتراک ${duration === 'monthly' ? 'ماهانه' : 'سالانه'} با موفقیت خریداری شد!`);
 
-        // Update plugin subscription status
-        const updatedPlugin = { ...plugin!, has_subscription: true };
-        setPlugin(updatedPlugin);
+      // Update plugin subscription status
+      const updatedPlugin = { ...plugin!, has_subscription: true };
+      setPlugin(updatedPlugin);
 
-        // Add plugin menu if it has menu data and is active
-        if (plugin?.id && plugin.status === 'active') {
-          try {
-            await addPluginMenu(plugin.id);
-          } catch (error) {
-            console.error('Error adding plugin menu:', error);
-          }
+      // Add plugin menu if it has menu data and is active
+      if (plugin?.id && plugin.status === 'active') {
+        try {
+          await addPluginMenu(plugin.id);
+        } catch (error) {
+          console.error('Error adding plugin menu:', error);
         }
-      } else {
-        setPurchaseStatus('error');
-        setStatusMessage(result.message || 'خطا در خرید اشتراک');
       }
     } catch (error) {
       setPurchaseStatus('error');
-      setStatusMessage(error instanceof Error ? error.message : 'خطا در ارتباط با سرور');
+      const errorMessage = error instanceof Error ? error.message : 'خطا در ارتباط با سرور';
+      setStatusMessage(formatMessage(errorMessage));
     }
   };
 

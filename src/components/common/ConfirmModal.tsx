@@ -1,7 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui-elements/button";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 type PropsType = {
   isOpen: boolean;
@@ -25,6 +26,13 @@ export function ConfirmModal({
   onConfirm,
   onCancel
 }: PropsType) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -43,10 +51,10 @@ export function ConfirmModal({
     };
   }, [isOpen, onCancel]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-[9999] overflow-y-auto">
+  const modalContent = (
+    <div className="fixed inset-0 z-[99999] overflow-y-auto">
       <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         {/* Backdrop */}
         <div
@@ -124,4 +132,6 @@ export function ConfirmModal({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

@@ -23,18 +23,17 @@ export interface ProductListResponse {
 
 class ProductService {
   async getProducts(page: number = 1, perPage: number = 20): Promise<ProductListResponse> {
-    const data = await apiClient.get<ProductListResponse>(
+    return await apiClient.get<ProductListResponse>(
       `/api/products/list?page=${page}&per_page=${perPage}`
     );
-    return data;
   }
 
   async getProductById(id: number): Promise<Product> {
     return await apiClient.get<Product>(`/api/products/${id}`);
   }
 
-  async deleteProduct(id: number): Promise<{ success: boolean; message: string }> {
-    return await apiClient.delete(`/api/products/${id}`);
+  async deleteProduct(id: number): Promise<void> {
+    await apiClient.delete(`/api/products/${id}`);
   }
 }
 

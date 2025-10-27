@@ -1,7 +1,7 @@
 import {clearTokens, getToken} from './token-manager';
 
-const API_BASE_URL = 'https://api.deskshops.ir';
-// const API_BASE_URL = 'http://127.0.0.1:8000';
+// const API_BASE_URL = 'https://api.deskshops.ir';
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 class ApiError extends Error {
     status?: number;
@@ -31,13 +31,24 @@ class ApiClient {
         return headers;
     }
 
+    private isRedirecting = false;
+
     private clearTokensAndRedirect() {
+        if (this.isRedirecting) return;
+        this.isRedirecting = true;
+
         clearTokens();
         if (typeof window !== 'undefined') {
-            setTimeout(() => {
-                window.location.replace('/login');
-            }, 100);
+            window.location.href = '/login';
         }
+    }
+
+    private handleFetchError(): never {
+        const offline = typeof navigator !== 'undefined' && navigator && 'onLine' in navigator && !navigator.onLine;
+        const msg = offline
+            ? 'به اینترنت متصل نیستید. لطفاً اتصال خود را بررسی کنید.'
+            : 'عدم دسترسی به سرور. لطفاً بعداً دوباره تلاش کنید.';
+        throw new ApiError(msg);
     }
 
     private async parseBodySafely(response: Response): Promise<unknown> {
@@ -52,7 +63,6 @@ class ApiClient {
 
     private async handleResponse<T>(response: Response): Promise<T> {
         if (response.status === 401 || response.status === 419) {
-            // فقط در 401/419 لاگ‌اوت کن
             this.clearTokensAndRedirect();
             throw new ApiError('Unauthorized', response.status);
         }
@@ -77,7 +87,15 @@ class ApiClient {
             return undefined;
         }
 
-        return (await response.json()) as T;
+        const jsonResponse = await response.json();
+
+        // اگر response ساختار جدید API داره (با data)، فقط data رو برگردون
+        if (jsonResponse && typeof jsonResponse === 'object' && 'data' in jsonResponse) {
+            return jsonResponse.data as T;
+        }
+
+        // در غیر اینصورت کل response رو برگردون
+        return jsonResponse as T;
     }
 
     private async doFetch<T>(
@@ -85,6 +103,11 @@ class ApiClient {
         endpoint: string,
         opts?: { body?: unknown; timeout?: number; isFormData?: boolean }
     ): Promise<T> {
+        // اگر در حال redirect هستیم، هیچ request دیگه‌ای نزن
+        if (this.isRedirecting) {
+            throw new ApiError('Redirecting to login...');
+        }
+
         try {
             const headers: Record<string, string> = opts?.isFormData ? {} : this.getAuthHeaders();
 
@@ -104,17 +127,18 @@ class ApiClient {
 
             return this.handleResponse<T>(response);
         } catch (error: unknown) {
-            // ❌ دیگر اینجا لاگ‌اوت نمی‌کنیم
             if (error instanceof DOMException && error.name === 'TimeoutError') {
                 throw new ApiError('درخواست شما منقضی شد. لطفاً دوباره تلاش کنید.');
             }
             if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-                // اینترنت قطع، CORS، یا سرور در دسترس نیست
-                const offline = typeof navigator !== 'undefined' && navigator && 'onLine' in navigator && !navigator.onLine;
-                const msg = offline
-                    ? 'به اینترنت متصل نیستید. لطفاً اتصال خود را بررسی کنید.'
-                    : 'عدم دسترسی به سرور. لطفاً بعداً دوباره تلاش کنید.';
-                throw new ApiError(msg);
+                // اگه token داریم، احتمالاً 401 هست (CORS جلوی دیدن status رو گرفته)
+                if (getToken()) {
+                    this.clearTokensAndRedirect();
+                    throw new ApiError('Session expired', 401);
+                }
+
+                // اگه token نداریم، مشکل واقعاً سرور یا اینترنته
+                this.handleFetchError();
             }
             // اگر ApiError از handleResponse آمده، همان را پاس بده
             if (error instanceof ApiError) throw error;
@@ -142,8 +166,56 @@ class ApiClient {
         return this.doFetch<T>('DELETE', endpoint);
     }
 
+    // برای API هایی که نیاز به دسترسی به meta دارند
+    async getWithMeta<T = unknown>(endpoint: string): Promise<{ data: T; meta?: Record<string, unknown> }> {
+        try {
+            const headers = this.getAuthHeaders();
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method: 'GET',
+                headers,
+                cache: 'no-store',
+            });
+
+            if (response.status === 401 || response.status === 419) {
+                this.clearTokensAndRedirect();
+                throw new ApiError('Unauthorized', response.status);
+            }
+
+            if (!response.ok) {
+                const data = await this.parseBodySafely(response);
+                const messageFromObject =
+                    typeof data === 'object' && data !== null && 'message' in data &&
+                    typeof (data as { message?: unknown }).message === 'string'
+                        ? (data as { message: string }).message
+                        : null;
+                const msg = messageFromObject || `HTTP error ${response.status}`;
+                throw new ApiError(msg, response.status, data);
+            }
+
+            const jsonResponse = await response.json();
+
+            // برگرداندن data و meta
+            if (jsonResponse && typeof jsonResponse === 'object') {
+                return {
+                    data: jsonResponse.data as T,
+                    meta: jsonResponse.meta as Record<string, unknown> | undefined
+                };
+            }
+
+            return { data: jsonResponse as T };
+        } catch (error) {
+            if (error instanceof ApiError) throw error;
+            throw new ApiError('خطا در ارتباط با سرور');
+        }
+    }
+
     // برای ریکوئست‌های احراز هویت (بدون header توکن)
     async authRequest<T = unknown>(endpoint: string, body?: unknown): Promise<T> {
+        // اگر در حال redirect هستیم، هیچ request دیگه‌ای نزن
+        if (this.isRedirecting) {
+            throw new ApiError('Redirecting to login...');
+        }
+
         try {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, {
                 method: 'POST',
@@ -156,11 +228,7 @@ class ApiClient {
             return this.handleResponse<T>(response);
         } catch (error: unknown) {
             if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-                const offline = typeof navigator !== 'undefined' && navigator && 'onLine' in navigator && !navigator.onLine;
-                const msg = offline
-                    ? 'به اینترنت متصل نیستید. لطفاً اتصال خود را بررسی کنید.'
-                    : 'عدم دسترسی به سرور. لطفاً بعداً دوباره تلاش کنید.';
-                throw new ApiError(msg);
+                this.handleFetchError();
             }
             if (error instanceof ApiError) throw error;
             if (error instanceof Error && error.message) {

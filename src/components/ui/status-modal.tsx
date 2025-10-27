@@ -1,7 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui-elements/button";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 type StatusType = 'success' | 'error' | 'loading';
 
@@ -14,6 +15,12 @@ type PropsType = {
 };
 
 export function StatusModal({ isOpen, status, title, message, onClose }: PropsType) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && status !== 'loading') {
@@ -32,7 +39,7 @@ export function StatusModal({ isOpen, status, title, message, onClose }: PropsTy
     };
   }, [isOpen, onClose, status]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const getStatusIcon = () => {
     switch (status) {
@@ -79,8 +86,11 @@ export function StatusModal({ isOpen, status, title, message, onClose }: PropsTy
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[9999] overflow-y-auto">
+  const modalContent = (
+    <div
+      className="fixed inset-0 overflow-y-auto"
+      style={{ zIndex: 999999 }}
+    >
       <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         {/* Backdrop */}
         <div
@@ -90,7 +100,7 @@ export function StatusModal({ isOpen, status, title, message, onClose }: PropsTy
         />
 
         {/* Modal panel */}
-        <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6 dark:bg-gray-dark">
+        <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-center shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6 dark:bg-gray-dark" dir="rtl">
           <div>
             {/* Status Icon */}
             {getStatusIcon()}
@@ -98,10 +108,10 @@ export function StatusModal({ isOpen, status, title, message, onClose }: PropsTy
             <div className="mt-3 text-center sm:mt-5">
               {/* Close button - only show if not loading */}
               {status !== 'loading' && (
-                <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+                <div className="absolute left-0 top-0 hidden pl-4 pt-4 sm:block">
                   <button
                     type="button"
-                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-gray-dark dark:text-gray-300"
+                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 dark:bg-gray-dark dark:text-gray-300"
                     onClick={onClose}
                   >
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -112,13 +122,13 @@ export function StatusModal({ isOpen, status, title, message, onClose }: PropsTy
               )}
 
               {/* Title */}
-              <h3 className={`text-base font-semibold leading-6 ${getStatusColor()}`}>
+              <h3 className={`text-lg font-semibold leading-6 ${getStatusColor()}`}>
                 {title}
               </h3>
 
               {/* Message */}
               <div className="mt-2">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-gray-500 dark:text-gray-400 whitespace-pre-line">
                   {message}
                 </p>
               </div>
@@ -141,4 +151,6 @@ export function StatusModal({ isOpen, status, title, message, onClose }: PropsTy
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

@@ -70,20 +70,18 @@ export function UploadForm({ onUploadSuccess, onUploadError }: UploadFormProps) 
 
     try {
       setUploading(true);
-      const response = await fileImporterService.uploadFile(selectedFile);
+      await fileImporterService.uploadFile(selectedFile);
 
-      if (response.success) {
-        setSelectedFile(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-        onUploadSuccess();
-      } else {
-        onUploadError(response.message || 'خطا در آپلود فایل');
+      // If no error thrown, upload was successful
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
+      onUploadSuccess();
     } catch (error) {
       console.error('Upload error:', error);
-      onUploadError('خطا در آپلود فایل. لطفاً دوباره تلاش کنید');
+      const errorMessage = error instanceof Error ? error.message : 'خطا در آپلود فایل. لطفاً دوباره تلاش کنید';
+      onUploadError(errorMessage);
     } finally {
       setUploading(false);
     }

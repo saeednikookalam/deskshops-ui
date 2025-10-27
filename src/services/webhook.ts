@@ -20,12 +20,12 @@ export class WebhookService {
      */
     async getWebhookStatus(): Promise<WebhookStatus> {
         try {
-            const response = await apiClient.get<WebhookApiResponse>('/plugins/webhook/');
+            const data = await apiClient.get<WebhookApiResponse>('/plugins/webhook/');
 
             return {
-                isActive: response.is_active,
-                apiRoute: response.url,
-                apiSecretKey: response.api_key || undefined
+                isActive: data.is_active,
+                apiRoute: data.url,
+                apiSecretKey: data.api_key || undefined
             };
         } catch (error) {
             console.error('Error fetching webhook status:', error);
@@ -42,12 +42,12 @@ export class WebhookService {
      */
     async activateWebhook(): Promise<{ success: boolean; apiRoute?: string; apiSecretKey?: string; message?: string }> {
         try {
-            const response = await apiClient.post<WebhookApiResponse>('/plugins/webhook/activate');
+            const data = await apiClient.post<WebhookApiResponse>('/plugins/webhook/activate');
 
             return {
-                success: response.is_active,
-                apiRoute: response.url,
-                apiSecretKey: response.api_key || undefined
+                success: data.is_active,
+                apiRoute: data.url,
+                apiSecretKey: data.api_key || undefined
             };
         } catch (error) {
             console.error('Error activating webhook:', error);

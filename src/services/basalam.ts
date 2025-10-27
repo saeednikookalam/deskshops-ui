@@ -59,16 +59,16 @@ export class BasalamService {
             }
 
             // API response format: { user: { title: "...", logo: "..." } }
-            const response = await apiClient.get<{ user?: { title: string; logo: string } }>(
+            const data = await apiClient.get<{ user?: { title: string; logo: string } }>(
                 `/plugins/basalam/check-user/${userIdToUse}`
             );
 
             // Transform API response to our format
-            if (response && response.user) {
+            if (data && data.user) {
                 return {
                     isConnected: true,
-                    shopName: response.user.title,
-                    shopIcon: response.user.logo
+                    shopName: data.user.title,
+                    shopIcon: data.user.logo
                 };
             }
 
@@ -177,16 +177,12 @@ export class BasalamService {
         }
     }
 
-    async disconnectShop(): Promise<{ success: boolean; message?: string }> {
+    async disconnectShop(): Promise<void> {
         try {
-            const response = await apiClient.post<{ success: boolean; message?: string }>('/api/basalam/disconnect');
-            return response;
+            await apiClient.post('/api/basalam/disconnect');
         } catch (error) {
             console.error('Error disconnecting Basalam shop:', error);
-            return {
-                success: false,
-                message: 'خطا در قطع اتصال فروشگاه'
-            };
+            throw error;
         }
     }
 

@@ -1,9 +1,41 @@
+"use client";
+
 import { Sidebar } from "@/components/Layouts/sidebar";
 import { Header } from "@/components/Layouts/header";
 import { PluginMenuProvider } from "@/contexts/plugin-menu-context";
 import type { PropsWithChildren } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { hasToken } from "@/lib/token-manager";
 
 export default function PanelLayout({ children }: PropsWithChildren) {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    // Check authentication on client side after mount
+    const authenticated = hasToken();
+    setIsAuthenticated(authenticated);
+
+    if (!authenticated) {
+      router.replace('/login');
+    }
+  }, [router]);
+
+  // Show loading or nothing while checking auth (prevents hydration mismatch)
+  if (isAuthenticated === null) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-2 dark:bg-[#020d1a]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Don't render anything if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <PluginMenuProvider>
       <div className="flex min-h-screen">

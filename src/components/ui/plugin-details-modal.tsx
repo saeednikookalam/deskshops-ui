@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui-elements/button";
 import { Plugin } from "@/services/plugin";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 type PropsType = {
   plugin: Plugin | null;
@@ -13,6 +14,12 @@ type PropsType = {
 
 export function PluginDetailsModal({ plugin, isOpen, onClose, onSubscribe }: PropsType) {
   const [selectedDuration, setSelectedDuration] = useState<'monthly' | 'yearly'>('monthly');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -32,7 +39,7 @@ export function PluginDetailsModal({ plugin, isOpen, onClose, onSubscribe }: Pro
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen || !plugin) return null;
+  if (!isOpen || !plugin || !mounted) return null;
 
   const formatPrice = (price: string) => {
     return parseFloat(price).toLocaleString('fa-IR') + ' تومان';
@@ -40,8 +47,8 @@ export function PluginDetailsModal({ plugin, isOpen, onClose, onSubscribe }: Pro
 
   const shouldShowSubscribeButton = plugin.status === 'active' && !plugin.has_subscription;
 
-  return (
-    <div className="fixed inset-0 z-[9999] overflow-y-auto">
+  const modalContent = (
+    <div className="fixed inset-0 z-[99999] overflow-y-auto">
       <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         {/* Backdrop */}
         <div
@@ -219,4 +226,6 @@ export function PluginDetailsModal({ plugin, isOpen, onClose, onSubscribe }: Pro
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }
