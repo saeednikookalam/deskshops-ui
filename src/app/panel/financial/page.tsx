@@ -31,7 +31,7 @@ function FinancialPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingCredits, setIsLoadingCredits] = useState(false);
   const [hasMore, setHasMore] = useState(false);
-  const [, setOffset] = useState(0);
+  const [offset, setOffset] = useState(0);
   const [showAddCreditModal, setShowAddCreditModal] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentResultModal, setPaymentResultModal] = useState<{
@@ -58,35 +58,28 @@ function FinancialPageContent() {
   const loadCredits = useCallback(async (reset = false) => {
     try {
       setIsLoadingCredits(true);
-      // Use functional update to get current offset without dependency
-      setOffset(currentOffset => {
-        const offsetToUse = reset ? 0 : currentOffset;
 
-        paymentsService.getCredits(limit, offsetToUse)
-          .then(data => {
-            const { credits, has_more } = data;
-            if (reset) {
-              setCredits(credits);
-            } else {
-              setCredits(prev => [...prev, ...credits]);
-            }
-            setHasMore(has_more);
-            setIsLoadingCredits(false);
-          })
-          .catch(error => {
-            console.error("Error loading credits:", error);
-            toast.error("خطا در بارگذاری لیست تراکنش‌ها");
-            setIsLoadingCredits(false);
-          });
+      const offsetToUse = reset ? 0 : offset;
+      const data = await paymentsService.getCredits(limit, offsetToUse);
 
-        return reset ? limit : currentOffset + limit;
-      });
+      const { credits: newCredits, has_more } = data;
+
+      if (reset) {
+        setCredits(newCredits);
+        setOffset(limit);
+      } else {
+        setCredits(prev => [...prev, ...newCredits]);
+        setOffset(prev => prev + limit);
+      }
+
+      setHasMore(has_more);
     } catch (error) {
       console.error("Error loading credits:", error);
       toast.error("خطا در بارگذاری لیست تراکنش‌ها");
+    } finally {
       setIsLoadingCredits(false);
     }
-  }, []);
+  }, [offset]);
 
   // Handle payment form submission
   const handlePaymentSubmit = async (amount: number) => {

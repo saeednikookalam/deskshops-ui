@@ -15,6 +15,7 @@ export default function PluginsPage() {
   const [error, setError] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [subscribedPluginIds, setSubscribedPluginIds] = useState<number[]>([]);
   const pageRef = useRef(1);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
@@ -31,7 +32,13 @@ export default function PluginsPage() {
       const response = await pluginService.getPluginsList(pageNum, 20);
 
       setPlugins(prev => {
-        const nextPlugins = append ? [...prev, ...response.plugins] : response.plugins;
+        // Mark plugins with subscription status based on subscribedPluginIds
+        const pluginsWithStatus = response.plugins.map(plugin => ({
+          ...plugin,
+          has_subscription: plugin.id ? subscribedPluginIds.includes(plugin.id) : false
+        }));
+
+        const nextPlugins = append ? [...prev, ...pluginsWithStatus] : pluginsWithStatus;
 
         // Calculate total loaded based on the new state
         const totalAvailable = response.total ?? 0;
@@ -48,13 +55,32 @@ export default function PluginsPage() {
       setLoading(false);
       setLoadingMore(false);
     }
+  }, [subscribedPluginIds]);
+
+  // Load user subscriptions and plugins
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Load subscriptions first
+        const subscriptionsResponse = await pluginService.getUserSubscriptions();
+        setSubscribedPluginIds(subscriptionsResponse.plugin_ids || []);
+      } catch (error) {
+        console.error('Error loading subscriptions:', error);
+        // Continue without subscriptions
+        setSubscribedPluginIds([]);
+      }
+    };
+
+    loadData();
   }, []);
 
-  // Initial load - only once
+  // Load plugins after subscriptions are loaded
   useEffect(() => {
-    loadPlugins(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // Only load if we have attempted to load subscriptions (even if it failed)
+    if (subscribedPluginIds !== null) {
+      loadPlugins(1);
+    }
+  }, [subscribedPluginIds, loadPlugins]);
 
   // Infinite scroll implementation
   useEffect(() => {
