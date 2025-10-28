@@ -50,7 +50,17 @@ class PaymentsService {
    * Get user balance
    */
   async getBalance(): Promise<UserBalanceData> {
-    return await apiClient.get<UserBalanceData>('/payments/balance');
+    const response = await apiClient.get<UserBalanceData | { balance: number } | number>('/payments/balance');
+
+    // Handle different response formats
+    if (typeof response === 'number') {
+      return { balance: response };
+    }
+    if (response && typeof response === 'object' && 'balance' in response) {
+      return { balance: response.balance };
+    }
+
+    return { balance: 0 };
   }
 
   /**
@@ -71,7 +81,17 @@ class PaymentsService {
    * Create a new payment request
    */
   async createPayment(data: CreatePaymentRequest): Promise<CreatePaymentData> {
-    return await apiClient.post<CreatePaymentData>('/payments/pay', data);
+    const response = await apiClient.post<CreatePaymentData | { payment_url?: string; authority?: string }>('/payments/pay', data);
+
+    // Handle different response formats
+    if (response && typeof response === 'object') {
+      return {
+        payment_url: response.payment_url,
+        authority: response.authority
+      };
+    }
+
+    return {};
   }
 
   /**

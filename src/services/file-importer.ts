@@ -62,18 +62,40 @@ class FileImporterService {
     const formData = new FormData();
     formData.append('file', file);
 
-    return await apiClient.uploadFile<ImportData>('/file-importer/upload', formData, 30000);
+    const data = await apiClient.uploadFile<ImportData>('/file-importer/upload', formData, 30000);
+
+    // Handle different response formats
+    if (data && typeof data === 'object') {
+      return data as ImportData;
+    }
+
+    throw new Error('Invalid response format for file upload');
   }
 
   /**
    * Get list of all imports for the current user
    */
   async getImports(): Promise<ImportsListResponse> {
-    const data = await apiClient.get<{ imports?: Import[]; total?: number }>('/file-importer/');
+    const data = await apiClient.get<{ imports?: Import[]; total?: number } | Import[]>('/file-importer/');
+
+    // Handle both { imports: [...], total: number } and direct Import[]
+    if (Array.isArray(data)) {
+      return {
+        imports: data,
+        total: data.length,
+      };
+    }
+
+    if (data && typeof data === 'object' && 'imports' in data) {
+      return {
+        imports: data.imports || [],
+        total: data.total || 0,
+      };
+    }
 
     return {
-      imports: data.imports || [],
-      total: data.total || 0,
+      imports: [],
+      total: 0,
     };
   }
 
@@ -81,7 +103,14 @@ class FileImporterService {
    * Get detailed information about a specific import
    */
   async getImportDetail(importId: number): Promise<ImportDetailData> {
-    return await apiClient.get<ImportDetailData>(`/file-importer/imports/${importId}`);
+    const data = await apiClient.get<ImportDetailData>(`/file-importer/imports/${importId}`);
+
+    // Handle different response formats
+    if (data && typeof data === 'object') {
+      return data as ImportDetailData;
+    }
+
+    throw new Error('Invalid response format for import detail');
   }
 
   /**
@@ -92,9 +121,24 @@ class FileImporterService {
     limit: number = 100,
     offset: number = 0
   ): Promise<ImportErrorsListData> {
-    return await apiClient.get<ImportErrorsListData>(
+    const data = await apiClient.get<ImportErrorsListData | { import_id: number; errors: ImportError[]; total_errors: number }>(
       `/file-importer/imports/${importId}/errors?limit=${limit}&offset=${offset}`
     );
+
+    // Handle different response formats
+    if (data && typeof data === 'object') {
+      return {
+        import_id: data.import_id || importId,
+        errors: data.errors || [],
+        total_errors: data.total_errors || 0,
+      };
+    }
+
+    return {
+      import_id: importId,
+      errors: [],
+      total_errors: 0,
+    };
   }
 
   /**
