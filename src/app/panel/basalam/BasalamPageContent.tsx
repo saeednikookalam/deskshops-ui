@@ -44,8 +44,17 @@ export default function BasalamPageContent() {
   const loadSettings = useCallback(async () => {
     try {
       setLoadingSettings(true);
-      const response = await apiClient.get<{ settings: Setting[] }>('/plugins/basalam/settings');
-      setSettings(response.settings);
+      const response = await apiClient.get<{ settings: Setting[] } | Setting[]>('/plugins/basalam/settings');
+
+      // Handle both { settings: [...] } and direct [...]
+      if (Array.isArray(response)) {
+        setSettings(response);
+      } else if (response && typeof response === 'object' && 'settings' in response) {
+        setSettings(response.settings);
+      } else {
+        console.error("Unexpected response format:", response);
+        setSettings([]);
+      }
     } catch (error) {
       console.error("Error loading settings:", error);
       showToast.error("خطا در بارگذاری تنظیمات");

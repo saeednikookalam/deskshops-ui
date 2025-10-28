@@ -59,17 +59,29 @@ export class BasalamService {
             }
 
             // API response format: { user: { title: "...", logo: "..." } }
-            const data = await apiClient.get<{ user?: { title: string; logo: string } }>(
+            const data = await apiClient.get<{ user?: { title: string; logo: string } } | { title: string; logo: string }>(
                 `/plugins/basalam/check-user/${userIdToUse}`
             );
 
             // Transform API response to our format
-            if (data && data.user) {
-                return {
-                    isConnected: true,
-                    shopName: data.user.title,
-                    shopIcon: data.user.logo
-                };
+            // Handle both { user: {...} } and direct { title: "...", logo: "..." }
+            if (data && typeof data === 'object') {
+                // Check if it's wrapped in 'user' property
+                if ('user' in data && data.user) {
+                    return {
+                        isConnected: true,
+                        shopName: data.user.title,
+                        shopIcon: data.user.logo
+                    };
+                }
+                // Check if it's direct user object
+                if ('title' in data && 'logo' in data) {
+                    return {
+                        isConnected: true,
+                        shopName: data.title,
+                        shopIcon: data.logo
+                    };
+                }
             }
 
             return {isConnected: false};
