@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { basalamService, type BasalamConnectionStatus } from "@/services/basalam";
 import { Alert } from "@/components/common/Alert";
 import { SettingToggle } from "@/components/basalam/SettingToggle";
+import { Tabs } from "@/components/basalam/Tabs";
 import { showToast } from "@/lib/toast";
 import { apiClient } from "@/lib/api-client";
 import Image from "next/image";
@@ -24,9 +25,11 @@ export default function BasalamPageContent() {
     user_setting_id: number | null;
     status: boolean;
     updated_at: string | null;
+    category: string;
   }
   const [settings, setSettings] = useState<Setting[]>([]);
   const [loadingSettings, setLoadingSettings] = useState(true);
+  const [activeTab, setActiveTab] = useState<string>("product");
 
   const checkConnectionStatus = useCallback(async () => {
     try {
@@ -294,7 +297,7 @@ export default function BasalamPageContent() {
 
         <div className="rounded-[10px] bg-white p-8 shadow-1 dark:bg-gray-dark dark:shadow-card">
           <h2 className="mb-6 text-xl font-bold text-dark dark:text-white">
-            تنظیمات همگام‌سازی
+            تنظیمات فروشگاه
           </h2>
 
           {loadingSettings ? (
@@ -309,19 +312,39 @@ export default function BasalamPageContent() {
               <p className="text-body-color dark:text-dark-6">هیچ تنظیماتی یافت نشد</p>
             </div>
           ) : (
-            <div className="space-y-1">
-              {settings.map((setting) => (
-                <SettingToggle
-                  key={setting.setting_id}
-                  id={`setting-${setting.setting_id}`}
-                  label={setting.title}
-                  description={setting.description}
-                  enabled={setting.status}
-                  onChange={(value) => handleSettingChange(setting.setting_id, setting.title, value)}
-                  lastUpdated={setting.updated_at || undefined}
-                />
-              ))}
-            </div>
+            <>
+              <Tabs
+                tabs={[
+                  { id: "product", label: "محصولات" },
+                  { id: "order", label: "سفارشات" },
+                  { id: "reviews", label: "تجربه خرید" },
+                  { id: "general", label: "عمومی" },
+                ]}
+                activeTab={activeTab}
+                onChange={setActiveTab}
+              />
+
+              <div className="space-y-1">
+                {settings
+                  .filter((setting) => setting.category === activeTab)
+                  .map((setting) => (
+                    <SettingToggle
+                      key={setting.setting_id}
+                      id={`setting-${setting.setting_id}`}
+                      label={setting.title}
+                      description={setting.description}
+                      enabled={setting.status}
+                      onChange={(value) => handleSettingChange(setting.setting_id, setting.title, value)}
+                      lastUpdated={setting.updated_at || undefined}
+                    />
+                  ))}
+                {settings.filter((setting) => setting.category === activeTab).length === 0 && (
+                  <div className="flex min-h-[150px] items-center justify-center">
+                    <p className="text-body-color dark:text-dark-6">تنظیماتی در این بخش یافت نشد</p>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
