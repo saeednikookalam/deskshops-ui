@@ -242,63 +242,59 @@ export default function BasalamPageContent() {
         />
       )}
 
-      <div className="space-y-6">
-        <div className="rounded-[10px] border border-green/20 bg-green/5 p-4 dark:border-green/30 dark:bg-green/10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="h-12 w-12 rounded-full bg-gray-2 dark:bg-dark-2 overflow-hidden">
-                  {connectionStatus.shopIcon ? (
-                    <Image
-                      src={connectionStatus.shopIcon}
-                      alt={connectionStatus.shopName || "Shop"}
-                      width={48}
-                      height={48}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <svg
-                        className="h-6 w-6 text-body-color dark:text-dark-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-                <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green dark:border-gray-dark"></span>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-dark dark:text-white">
-                  {connectionStatus.shopName || "فروشگاه باسلام"}
-                </h3>
-                <p className="text-sm text-green">فروشگاه متصل است</p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => window.location.reload()}
-              className="text-sm text-body-color hover:text-primary dark:text-dark-6 dark:hover:text-primary"
-            >
-              بررسی مجدد
-            </button>
-          </div>
-        </div>
-
         <div className="rounded-[10px] bg-white p-8 shadow-1 dark:bg-gray-dark dark:shadow-card">
-          <h2 className="mb-6 text-xl font-bold text-dark dark:text-white">
-            تنظیمات فروشگاه
-          </h2>
+            <div className="space-y-6">
+                <div className="rounded-[10px] border border-green/20 bg-green/5 p-4 dark:border-green/30 dark:bg-green/10">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="relative">
+                                <div className="h-12 w-12 rounded-full bg-gray-2 dark:bg-dark-2 overflow-hidden">
+                                    {connectionStatus.shopIcon ? (
+                                        <Image
+                                            src={connectionStatus.shopIcon}
+                                            alt={connectionStatus.shopName || "Shop"}
+                                            width={48}
+                                            height={48}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="flex h-full w-full items-center justify-center">
+                                            <svg
+                                                className="h-6 w-6 text-body-color dark:text-dark-6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                                                />
+                                            </svg>
+                                        </div>
+                                    )}
+                                </div>
+                                <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green dark:border-gray-dark"></span>
+                            </div>
+
+                            <div>
+                                <h3 className="font-semibold text-dark dark:text-white">
+                                    {connectionStatus.shopName || "فروشگاه باسلام"}
+                                </h3>
+                                <p className="text-sm text-green">فروشگاه متصل است</p>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="text-sm text-body-color hover:text-primary dark:text-dark-6 dark:hover:text-primary"
+                        >
+                            بررسی مجدد
+                        </button>
+                    </div>
+                </div>
 
           {loadingSettings ? (
             <div className="flex min-h-[200px] items-center justify-center">
