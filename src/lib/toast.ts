@@ -46,6 +46,15 @@ export const showToast = {
   },
 
   /**
+   * نمایش پیام هشدار
+   */
+  warning: (message: string) => {
+    return toast(message, {
+      icon: '⚠️',
+    });
+  },
+
+  /**
    * نمایش پیام loading
    */
   loading: (message: string) => {

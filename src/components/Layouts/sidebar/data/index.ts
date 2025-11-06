@@ -61,13 +61,63 @@ export function generateNavData(pluginMenus: MenuPlugin[]): NavSection[] {
     return staticData;
   }
 
-  // Create plugin menu items
-  const pluginMenuItems: NavItem[] = pluginMenus.map((plugin) => ({
-    title: plugin.title,
-    icon: Icons.PieChart,
-    url: plugin.path,
-    items: [],
-  }));
+  // Find basalam plugin
+  const basalamPlugin = pluginMenus.find((plugin) =>
+    plugin.name === 'basalam' || plugin.path.includes('/basalam')
+  );
+
+  // Create plugin menu items (excluding basalam)
+  const pluginMenuItems: NavItem[] = pluginMenus
+    .filter((plugin) => plugin.name !== 'basalam' && !plugin.path.includes('/basalam'))
+    .map((plugin) => ({
+      title: plugin.title,
+      icon: Icons.PieChart,
+      url: plugin.path,
+      items: [],
+    }));
+
+  // If basalam plugin exists, create collapsible menu with sub-items
+  if (basalamPlugin) {
+    const basalamMenuItem: NavItem = {
+      title: basalamPlugin.title,
+      icon: basalamPlugin.icon ? DynamicIcon : Icons.PieChart,
+      iconSrc: basalamPlugin.icon || undefined,
+      items: [
+        {
+          title: "فروشگاه‌ها",
+          icon: Icons.HomeIcon,
+          url: "/panel/basalam/shops",
+          items: [],
+        },
+        {
+          title: "محصولات",
+          icon: Icons.FourCircle,
+          url: "/panel/basalam/products",
+          items: [],
+        },
+        {
+          title: "سفارشات",
+          icon: Icons.Table,
+          url: "/panel/basalam/orders",
+          items: [],
+        },
+        {
+          title: "درخواست‌ها",
+          icon: Icons.Calendar,
+          url: "/panel/basalam/requests",
+          items: [],
+        },
+        {
+          title: "تنظیمات",
+          icon: Icons.PieChart,
+          url: "/panel/basalam/settings",
+          items: [],
+        },
+      ],
+    };
+
+    pluginMenuItems.push(basalamMenuItem);
+  }
 
   // Add plugin menus to the main section (same as static menus)
   const updatedStaticData = [...staticData];
