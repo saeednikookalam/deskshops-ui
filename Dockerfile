@@ -19,6 +19,10 @@ COPY . .
 # غیرفعال کردن تلمتری Next.js
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# تنظیم API Base URL برای build time
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+
 RUN npm run build
 
 # تصویر نهایی برای اجرا
