@@ -15,6 +15,7 @@ import { paymentsService, type CreditItem } from "@/services/payments";
 import { Button } from "@/components/ui-elements/button";
 import { AddCreditModal } from "@/components/ui/add-credit-modal";
 import { StatusModal } from "@/components/ui/status-modal";
+import { Currency } from "@/components/ui/currency";
 import { toast } from "react-hot-toast";
 import dayjs from "dayjs";
 import "dayjs/locale/fa";
@@ -107,11 +108,6 @@ function FinancialPageContent() {
   // Load more credits
   const handleLoadMore = () => {
     loadCredits(false);
-  };
-
-  // Format amount
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat("fa-IR").format(amount) + " تومان";
   };
 
   // Check for payment callback result
@@ -231,7 +227,7 @@ function FinancialPageContent() {
             <div className="mt-6">
               <div>
                 <h4 className="mb-1.5 text-heading-6 font-bold text-dark dark:text-white">
-                  {formatAmount(balance)}
+                  <Currency value={balance} />
                 </h4>
                 <span className="text-sm font-medium text-dark-6">موجودی حساب</span>
               </div>
@@ -294,7 +290,8 @@ function FinancialPageContent() {
                                 ? "text-[#219653]"
                                 : "text-[#D34053]"
                             )}>
-                              {credit.amount > 0 ? '+' : ''}{formatAmount(credit.amount)}
+                              {credit.amount > 0 ? '+' : ''}
+                              <Currency value={Math.abs(credit.amount)} />
                             </h5>
                           </TableCell>
 

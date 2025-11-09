@@ -76,3 +76,32 @@ export function handleDecimalInput(e: React.ChangeEvent<HTMLInputElement>, callb
   e.target.value = value;
   callback(value);
 }
+
+/**
+ * تبدیل ریال به تومان
+ */
+export function rialToToman(rialAmount: number): number {
+  return Math.floor(rialAmount / 10);
+}
+
+/**
+ * تبدیل تومان به ریال
+ */
+export function tomanToRial(tomanAmount: number): number {
+  return tomanAmount * 10;
+}
+
+/**
+ * فرمت کردن عدد با کامای فارسی
+ */
+export function formatWithPersianComma(num: number): string {
+  return new Intl.NumberFormat('fa-IR').format(num);
+}
+
+/**
+ * فرمت کردن مبلغ به تومان با کامای فارسی
+ */
+export function formatCurrency(rialAmount: number): string {
+  const tomanAmount = rialToToman(rialAmount);
+  return formatWithPersianComma(tomanAmount);
+}

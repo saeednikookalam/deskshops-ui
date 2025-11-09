@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { apiClient } from "@/lib/api-client";
 import { showToast } from "@/lib/toast";
 import {
@@ -51,6 +51,7 @@ export default function RequestsPageContent() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const initialLoadDone = useRef(false);
 
   const loadRequests = useCallback(async (pageNum: number, append = false, isRefresh = false) => {
     try {
@@ -86,18 +87,26 @@ export default function RequestsPageContent() {
     }
   }, []);
 
+  // Load initial data once
   useEffect(() => {
-    loadRequests(1, false, false);
-  }, [loadRequests]);
+    if (!initialLoadDone.current) {
+      initialLoadDone.current = true;
+      loadRequests(1, false, false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Auto-refresh هر 10 ثانیه
   useEffect(() => {
     const interval = setInterval(() => {
-      loadRequests(1, false, true);
+      if (initialLoadDone.current) {
+        loadRequests(1, false, true);
+      }
     }, 10000); // 10 seconds
 
     return () => clearInterval(interval);
-  }, [loadRequests]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleLoadMore = () => {
     const nextPage = page + 1;

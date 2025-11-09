@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { Currency } from "@/components/ui/currency";
 import type { JSX, SVGProps } from "react";
 import Image from "next/image";
 
@@ -40,12 +41,6 @@ export function PluginCard({
   icon: Icon = defaultIcon,
   onCardClick
 }: PropsType) {
-  const formatPrice = (price: string) => {
-    // Convert Rial to Toman by dividing by 10
-    const tomanPrice = parseFloat(price) / 10;
-    return tomanPrice.toLocaleString('fa-IR') + ' تومان';
-  };
-
   const truncateDescription = (text: string, maxLength: number = 150) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
@@ -124,12 +119,16 @@ export function PluginCard({
             <div className="flex justify-between items-center text-xs text-body-color dark:text-dark-6">
               <div className="text-center flex-1">
                 <div>ماهانه</div>
-                <div className="font-medium text-dark dark:text-white">{monthlyPrice ? formatPrice(monthlyPrice) : '-'}</div>
+                <div className="font-medium text-dark dark:text-white">
+                  {monthlyPrice ? <Currency value={parseFloat(monthlyPrice)} /> : '-'}
+                </div>
               </div>
               <div className="w-px h-8 bg-stroke dark:bg-dark-3 mx-2"></div>
               <div className="text-center flex-1">
                 <div>سالانه</div>
-                <div className="font-medium text-dark dark:text-white">{yearlyPrice ? formatPrice(yearlyPrice) : '-'}</div>
+                <div className="font-medium text-dark dark:text-white">
+                  {yearlyPrice ? <Currency value={parseFloat(yearlyPrice)} /> : '-'}
+                </div>
               </div>
             </div>
           </div>

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui-elements/button";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { handleNumberInput } from "@/lib/number-utils";
+import { CurrencyInput } from "@/components/ui/currency-input";
 
 type PropsType = {
   isOpen: boolean;
@@ -13,7 +13,7 @@ type PropsType = {
 };
 
 export function AddCreditModal({ isOpen, onClose, onSubmit, isProcessing = false }: PropsType) {
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(0);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -40,15 +40,15 @@ export function AddCreditModal({ isOpen, onClose, onSubmit, isProcessing = false
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const amountValue = parseInt(amount);
-    if (amountValue >= 10000) {
-      onSubmit(amountValue);
+    // amount به ریال است، به API ارسال می‌شود
+    if (amount >= 100000) {
+      onSubmit(amount);
     }
   };
 
   const handleClose = () => {
     if (!isProcessing) {
-      setAmount("");
+      setAmount(0);
       onClose();
     }
   };
@@ -96,16 +96,14 @@ export function AddCreditModal({ isOpen, onClose, onSubmit, isProcessing = false
                 <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
                   مبلغ (تومان) <span className="text-red">*</span>
                 </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
+                <CurrencyInput
                   name="amount"
                   value={amount}
-                  onChange={(e) => handleNumberInput(e, setAmount)}
+                  onChange={setAmount}
                   placeholder="مبلغ مورد نظر را وارد کنید"
                   required
-                  className="w-full rounded-lg border border-stroke bg-transparent py-3 px-5 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
                   disabled={isProcessing}
+                  min={10000}
                 />
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                   حداقل مبلغ: ۱۰,۰۰۰ تومان
@@ -120,7 +118,7 @@ export function AddCreditModal({ isOpen, onClose, onSubmit, isProcessing = false
                 label={isProcessing ? "در حال پردازش..." : "پرداخت"}
                 variant="primary"
                 shape="rounded"
-                disabled={isProcessing || !amount || parseInt(amount) < 10000}
+                disabled={isProcessing || amount < 100000}
               />
               <Button
                 type="button"

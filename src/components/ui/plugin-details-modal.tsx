@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui-elements/button";
 import { Plugin } from "@/services/plugin";
+import { Currency } from "@/components/ui/currency";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -40,10 +41,6 @@ export function PluginDetailsModal({ plugin, isOpen, onClose, onSubscribe }: Pro
   }, [isOpen, onClose]);
 
   if (!isOpen || !plugin || !mounted) return null;
-
-  const formatPrice = (price: string) => {
-    return parseFloat(price).toLocaleString('fa-IR') + ' تومان';
-  };
 
   const shouldShowSubscribeButton = plugin.status === 'active' && !plugin.has_subscription;
 
@@ -144,7 +141,7 @@ export function PluginDetailsModal({ plugin, isOpen, onClose, onSubscribe }: Pro
                               پلن ماهانه
                             </label>
                             <p className="text-indigo-600 dark:text-indigo-400 font-semibold">
-                              {formatPrice(plugin.monthly_price)}
+                              <Currency value={parseFloat(plugin.monthly_price)} />
                             </p>
                           </div>
                         </div>
@@ -177,7 +174,7 @@ export function PluginDetailsModal({ plugin, isOpen, onClose, onSubscribe }: Pro
                               پلن سالانه
                             </label>
                             <p className="text-indigo-600 dark:text-indigo-400 font-semibold">
-                              {formatPrice(plugin.yearly_price)}
+                              <Currency value={parseFloat(plugin.yearly_price)} />
                             </p>
                             {plugin.monthly_price && (
                               <p className="text-green-600 text-xs">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { paymentsService } from "@/services/payments";
+import { Currency } from "@/components/ui/currency";
 import Link from "next/link";
 
 export function BalanceDisplay() {
@@ -24,10 +25,6 @@ export function BalanceDisplay() {
 
     fetchBalance();
   }, []);
-
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat("fa-IR").format(amount);
-  };
 
   if (isLoading) {
     return (
@@ -83,7 +80,7 @@ export function BalanceDisplay() {
         <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
       </svg>
       <span className="text-sm font-medium text-dark dark:text-white">
-        {formatAmount(balance || 0)} تومان
+        <Currency value={balance || 0} />
       </span>
     </Link>
   );
