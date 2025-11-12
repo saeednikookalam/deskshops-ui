@@ -92,7 +92,6 @@ export default function PluginsPage() {
     };
 
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Infinite scroll implementation

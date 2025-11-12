@@ -61,7 +61,11 @@ export class BasalamService {
             // API response format: { user: { title: "...", logo: "..." } } or { title: "...", logo: "..." }
             // If data is empty/null => not connected
             // If data has values => connected
-            const data = await apiClient.get<{ user?: { title: string; logo: string } } | { title: string; logo: string } | null>(
+            const data = await apiClient.get<{
+                user?: { title?: string; logo?: string };
+                title?: string;
+                logo?: string;
+            } | null>(
                 `/plugins/basalam/check-user/${userIdToUse}`
             );
 

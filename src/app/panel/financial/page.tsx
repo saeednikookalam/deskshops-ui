@@ -81,7 +81,7 @@ function FinancialPageContent() {
     } finally {
       setIsLoadingCredits(false);
     }
-  }, []); // Remove offset dependency
+  }, [offset]);
 
   // Handle payment form submission
   const handlePaymentSubmit = async (amount: number) => {

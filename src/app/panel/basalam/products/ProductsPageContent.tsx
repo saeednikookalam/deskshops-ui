@@ -42,7 +42,6 @@ export default function ProductsPageContent() {
   const [products, setProducts] = useState<BasalamProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -94,7 +93,7 @@ export default function ProductsPageContent() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, []); // Remove dependencies - filters are passed as parameters
+  }, [statusFilter, hasSkuFilter]);
 
   // Initial load
   useEffect(() => {
@@ -179,7 +178,6 @@ export default function ProductsPageContent() {
 
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);
-    setPage(1);
     pageRef.current = 1;
     setSelectedProducts(new Set());
     loadProducts(1, false, { status: value, hasSku: hasSkuFilter });
@@ -187,7 +185,6 @@ export default function ProductsPageContent() {
 
   const handleHasSkuFilterChange = (value: string) => {
     setHasSkuFilter(value);
-    setPage(1);
     pageRef.current = 1;
     setSelectedProducts(new Set());
     loadProducts(1, false, { status: statusFilter, hasSku: value });

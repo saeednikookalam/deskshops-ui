@@ -37,7 +37,8 @@ export default function ProductsPageContent() {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
 
-  const loadProducts = useCallback(async (pageNum: number, append = false, filters?: { status?: string; hasSku?: string }) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const loadProducts = useCallback(async (pageNum: number, append = false, _filters?: { status?: string; hasSku?: string }) => {
     try {
       if (append) {
         setLoadingMore(true);
