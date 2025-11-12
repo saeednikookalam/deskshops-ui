@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { apiClient } from "@/lib/api-client";
-import { showToast } from "@/lib/toast";
 import {
   Table,
   TableBody,
@@ -14,44 +12,30 @@ import {
 import Image from "next/image";
 import { Currency } from "@/components/ui/currency";
 
-interface Photo {
-  id: number;
-  lg: string;
-  md: string;
-  sm: string;
-  xs: string;
-  original: string;
-}
-
-interface BasalamProduct {
+interface Product {
   id: number;
   sku: string | null;
   title: string;
   inventory: number;
-  status: number;
+  status: "active" | "inactive";
   price: number;
-  photo: Photo | null;
-  images: string[] | null;
-  category_id: number | null;
-  category_title: string | null;
+  image: string | null;
+  category: string | null;
   created_at: string;
   updated_at: string;
 }
 
 export default function ProductsPageContent() {
-  const [products, setProducts] = useState<BasalamProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
-  const [syncing, setSyncing] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [hasSkuFilter, setHasSkuFilter] = useState<string>("all");
   const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
   const pageRef = useRef(1);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
-  const initialLoadDone = useRef(false);
 
   const loadProducts = useCallback(async (pageNum: number, append = false, filters?: { status?: string; hasSku?: string }) => {
     try {
@@ -61,58 +45,45 @@ export default function ProductsPageContent() {
         setLoading(true);
       }
 
-      const params = new URLSearchParams();
-      params.append('page', String(pageNum));
-      params.append('limit', '20');
+      // TODO: Replace with actual API call
+      // const params = new URLSearchParams();
+      // params.append('page', String(pageNum));
+      // params.append('limit', '20');
+      //
+      // const activeStatus = filters?.status || statusFilter;
+      // const activeHasSku = filters?.hasSku || hasSkuFilter;
+      //
+      // if (activeStatus !== "all") {
+      //   params.append('status', activeStatus);
+      // }
+      // if (activeHasSku !== "all") {
+      //   params.append('has_sku', activeHasSku);
+      // }
+      //
+      // const response = await apiClient.getWithMeta<Product[]>(
+      //   `/products?${params.toString()}`
+      // );
 
-      const activeStatus = filters?.status || statusFilter;
-      const activeHasSku = filters?.hasSku || hasSkuFilter;
+      // Mock data for now
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      if (activeStatus !== "all") {
-        params.append('status', activeStatus);
-      }
-      if (activeHasSku !== "all") {
-        params.append('has_sku', activeHasSku);
-      }
+      const mockProducts: Product[] = [];
+      setProducts(mockProducts);
+      setHasMore(false);
 
-      const response = await apiClient.getWithMeta<BasalamProduct[]>(
-        `/plugins/basalam/products?${params.toString()}`
-      );
-
-      if (response.data) {
-        if (append) {
-          setProducts((prev) => [...prev, ...response.data]);
-        } else {
-          setProducts(response.data);
-        }
-        setHasMore(response.meta?.has_more === true);
-      }
     } catch (error) {
       console.error("Error loading products:", error);
-      showToast.error("خطا در بارگذاری محصولات");
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
   }, []); // Remove dependencies - filters are passed as parameters
 
-  // Initial load
   useEffect(() => {
-    if (!initialLoadDone.current) {
-      initialLoadDone.current = true;
-      loadProducts(1, false);
-    }
+    pageRef.current = 1;
+    loadProducts(1, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Reload when filters change
-  useEffect(() => {
-    if (initialLoadDone.current) {
-      pageRef.current = 1;
-      loadProducts(1, false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, hasSkuFilter]);
+  }, [statusFilter, hasSkuFilter]); // Reload when filters change
 
   // Infinite scroll implementation
   useEffect(() => {
@@ -147,39 +118,12 @@ export default function ProductsPageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMore, loadingMore]);
 
-  const handleSyncProducts = async () => {
-    try {
-      setSyncing(true);
-      const response = await apiClient.postWithFullResponse('/plugins/basalam/sync', {
-        entity_type: 1, // 1 = Products
-        filters: null,
-      });
-
-      const message = response.message || "درخواست به‌روزرسانی محصولات با موفقیت ثبت شد";
-
-      if (response.status >= 200 && response.status < 300) {
-        showToast.success(message);
-      } else if (response.status >= 400 && response.status < 500) {
-        showToast.warning(message);
-      } else {
-        showToast.error(message);
-      }
-    } catch (error) {
-      console.error("Error syncing products:", error);
-      const errorMessage = error instanceof Error ? error.message : "خطا در ثبت درخواست به‌روزرسانی";
-      showToast.error(errorMessage);
-    } finally {
-      setSyncing(false);
-    }
-  };
-
-  const getStatusLabel = (status: number): string => {
-    return status === 2976 ? "فعال" : "غیرفعال";
+  const getStatusLabel = (status: string): string => {
+    return status === "active" ? "فعال" : "غیرفعال";
   };
 
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);
-    setPage(1);
     pageRef.current = 1;
     setSelectedProducts(new Set());
     loadProducts(1, false, { status: value, hasSku: hasSkuFilter });
@@ -187,7 +131,6 @@ export default function ProductsPageContent() {
 
   const handleHasSkuFilterChange = (value: string) => {
     setHasSkuFilter(value);
-    setPage(1);
     pageRef.current = 1;
     setSelectedProducts(new Set());
     loadProducts(1, false, { status: statusFilter, hasSku: value });
@@ -247,35 +190,6 @@ export default function ProductsPageContent() {
               لغو انتخاب
             </button>
           )}
-          <button
-            onClick={handleSyncProducts}
-            disabled={syncing}
-            className="inline-flex items-center justify-center gap-2.5 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white transition-all hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {syncing ? (
-              <>
-                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></span>
-                در حال ثبت درخواست...
-              </>
-            ) : (
-              <>
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-                درخواست به‌روزرسانی
-              </>
-            )}
-          </button>
         </div>
       </div>
 
@@ -334,8 +248,6 @@ export default function ProductsPageContent() {
           </h3>
           <p className="mb-6 text-center text-base text-body-color dark:text-dark-6">
             در حال حاضر محصولی برای نمایش وجود ندارد.
-            <br />
-            برای دریافت محصولات از دکمه «درخواست به‌روزرسانی» استفاده کنید.
           </p>
         </div>
       ) : (
@@ -372,9 +284,9 @@ export default function ProductsPageContent() {
                   </TableCell>
                   <TableCell className="min-w-[80px]">
                     <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-gray-2 dark:bg-dark-2">
-                      {product.photo?.sm ? (
+                      {product.image ? (
                         <Image
-                          src={product.photo.sm}
+                          src={product.image}
                           alt={product.title}
                           width={64}
                           height={64}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { basalamService, type BasalamConnectionStatus } from "@/services/basalam";
 import { Alert } from "@/components/common/Alert";
@@ -12,6 +12,7 @@ export default function ShopsPageContent() {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [alert, setAlert] = useState<{ type: "success" | "error" | "warning"; message: string } | null>(null);
+  const initialLoadDone = useRef(false);
 
   const checkConnectionStatus = useCallback(async () => {
     try {
@@ -27,6 +28,9 @@ export default function ShopsPageContent() {
   }, []);
 
   useEffect(() => {
+    if (initialLoadDone.current) return;
+    initialLoadDone.current = true;
+
     // Check for redirect params from backend
     const status = searchParams.get('status');
     const message = searchParams.get('message');
@@ -59,7 +63,8 @@ export default function ShopsPageContent() {
     }
 
     checkConnectionStatus();
-  }, [searchParams, checkConnectionStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleConnect = () => {
     setConnecting(true);

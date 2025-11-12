@@ -58,24 +58,31 @@ export class BasalamService {
                 return {isConnected: false};
             }
 
-            // API response format: { user: { title: "...", logo: "..." } }
-            const data = await apiClient.get<{ user?: { title: string; logo: string } } | { title: string; logo: string }>(
+            // API response format: { user: { title: "...", logo: "..." } } or { title: "...", logo: "..." }
+            // If data is empty/null => not connected
+            // If data has values => connected
+            const data = await apiClient.get<{ user?: { title: string; logo: string } } | { title: string; logo: string } | null>(
                 `/plugins/basalam/check-user/${userIdToUse}`
             );
 
-            // Transform API response to our format
+            // If response is null, undefined, or empty object => not connected
+            if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
+                return {isConnected: false};
+            }
+
+            // If we have data, it means connected
             // Handle both { user: {...} } and direct { title: "...", logo: "..." }
-            if (data && typeof data === 'object') {
+            if (typeof data === 'object') {
                 // Check if it's wrapped in 'user' property
-                if ('user' in data && data.user && data.user.title && data.user.logo) {
+                if ('user' in data && data.user) {
                     return {
                         isConnected: true,
                         shopName: data.user.title,
                         shopIcon: data.user.logo
                     };
                 }
-                // Check if it's direct user object with actual values (not null)
-                if ('title' in data && 'logo' in data && data.title && data.logo) {
+                // Check if it's direct user object
+                if ('title' in data || 'logo' in data) {
                     return {
                         isConnected: true,
                         shopName: data.title,

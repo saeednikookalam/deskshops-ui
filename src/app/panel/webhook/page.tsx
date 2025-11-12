@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { webhookService, type WebhookStatus } from "@/services/webhook";
 import { Alert } from "@/components/common/Alert";
 import { showToast } from "@/lib/toast";
@@ -13,6 +13,7 @@ export default function WebhookPage() {
   const [alert, setAlert] = useState<{ type: "success" | "error" | "warning"; message: string } | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const initialLoadDone = useRef(false);
 
   // ساختن URL کامل API Route
   const getFullApiRoute = () => {
@@ -43,7 +44,10 @@ export default function WebhookPage() {
   };
 
   useEffect(() => {
-    checkWebhookStatus();
+    if (!initialLoadDone.current) {
+      initialLoadDone.current = true;
+      checkWebhookStatus();
+    }
   }, []);
 
   const handleActivate = async () => {

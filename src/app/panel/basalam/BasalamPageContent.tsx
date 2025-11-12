@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { basalamService, type BasalamConnectionStatus } from "@/services/basalam";
 import { Alert } from "@/components/common/Alert";
@@ -16,6 +16,7 @@ export default function BasalamPageContent() {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [alert, setAlert] = useState<{ type: "success" | "error" | "warning"; message: string } | null>(null);
+  const initialLoadDone = useRef(false);
 
   // Settings state
   interface Setting {
@@ -67,45 +68,57 @@ export default function BasalamPageContent() {
   }, []);
 
   useEffect(() => {
-    // Check for redirect params from backend
-    const status = searchParams.get('status');
-    const message = searchParams.get('message');
-    const state = searchParams.get('state');
+    if (initialLoadDone.current) return;
 
-    if (status) {
-      // Verify state for CSRF protection
-      const stateVerification = state ? basalamService.verifyState(state) : { valid: false };
+    const loadData = async () => {
+      initialLoadDone.current = true;
 
-      if (state && !stateVerification.valid) {
-        setAlert({
-          type: 'error',
-          message: 'خطای امنیتی: درخواست نامعتبر است. لطفاً دوباره تلاش کنید.'
-        });
-      } else if (status === 'success') {
-        setAlert({
-          type: 'success',
-          message: message || 'فروشگاه شما با موفقیت متصل شد!'
-        });
-      } else if (status === 'error') {
-        setAlert({
-          type: 'error',
-          message: message || 'خطا در اتصال به باسلام. لطفاً دوباره تلاش کنید.'
-        });
+      // Check for redirect params from backend
+      const status = searchParams.get('status');
+      const message = searchParams.get('message');
+      const state = searchParams.get('state');
+
+      if (status) {
+        // Verify state for CSRF protection
+        const stateVerification = state ? basalamService.verifyState(state) : { valid: false };
+
+        if (state && !stateVerification.valid) {
+          setAlert({
+            type: 'error',
+            message: 'خطای امنیتی: درخواست نامعتبر است. لطفاً دوباره تلاش کنید.'
+          });
+        } else if (status === 'success') {
+          setAlert({
+            type: 'success',
+            message: message || 'فروشگاه شما با موفقیت متصل شد!'
+          });
+        } else if (status === 'error') {
+          setAlert({
+            type: 'error',
+            message: message || 'خطا در اتصال به باسلام. لطفاً دوباره تلاش کنید.'
+          });
+        }
+
+        // Clean URL
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
       }
 
-      // Clean URL
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
-    }
+      // Check connection status
+      await checkConnectionStatus();
+    };
 
-    checkConnectionStatus();
-  }, [searchParams, checkConnectionStatus]);
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  // Load settings when connection status changes
   useEffect(() => {
-    if (connectionStatus?.isConnected) {
+    if (connectionStatus?.isConnected && initialLoadDone.current) {
       loadSettings();
     }
-  }, [connectionStatus?.isConnected, loadSettings]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connectionStatus?.isConnected]);
 
   const handleConnect = () => {
     setConnecting(true);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Table,
@@ -41,6 +41,7 @@ function FinancialPageContent() {
     message: string;
     authority?: string;
   }>({ show: false, success: false, message: "" });
+  const initialLoadDone = useRef(false);
 
   const limit = 20;
 
@@ -80,7 +81,7 @@ function FinancialPageContent() {
     } finally {
       setIsLoadingCredits(false);
     }
-  }, [offset]);
+  }, []); // Remove offset dependency
 
   // Handle payment form submission
   const handlePaymentSubmit = async (amount: number) => {
@@ -110,40 +111,37 @@ function FinancialPageContent() {
     loadCredits(false);
   };
 
-  // Check for payment callback result
+  // Initial load and payment callback handling
   useEffect(() => {
-    const status = searchParams.get("status");
-    const message = searchParams.get("message");
-    const authority = searchParams.get("authority");
+    if (initialLoadDone.current) return;
 
-    if (status || message) {
-      setPaymentResultModal({
-        show: true,
-        success: status === "success",
-        message: message
-          ? decodeURIComponent(message)
-          : (status === "success" ? "پرداخت با موفقیت انجام شد" : "پرداخت ناموفق بود"),
-        authority: authority || undefined
-      });
-
-      // Clear URL parameters
-      const url = new URL(window.location.href);
-      url.searchParams.delete("status");
-      url.searchParams.delete("message");
-      url.searchParams.delete("authority");
-      window.history.replaceState({}, "", url.toString());
-
-      // Reload balance and credits after payment (only on success)
-      if (status === "success") {
-        loadBalance();
-        loadCredits(true);
-      }
-    }
-  }, [searchParams, loadBalance, loadCredits]);
-
-  // Initial load
-  useEffect(() => {
     const loadData = async () => {
+      initialLoadDone.current = true;
+
+      // Check for payment callback result
+      const status = searchParams.get("status");
+      const message = searchParams.get("message");
+      const authority = searchParams.get("authority");
+
+      if (status || message) {
+        setPaymentResultModal({
+          show: true,
+          success: status === "success",
+          message: message
+            ? decodeURIComponent(message)
+            : (status === "success" ? "پرداخت با موفقیت انجام شد" : "پرداخت ناموفق بود"),
+          authority: authority || undefined
+        });
+
+        // Clear URL parameters
+        const url = new URL(window.location.href);
+        url.searchParams.delete("status");
+        url.searchParams.delete("message");
+        url.searchParams.delete("authority");
+        window.history.replaceState({}, "", url.toString());
+      }
+
+      // Load data
       setIsLoading(true);
       await Promise.all([
         loadBalance(),
@@ -153,7 +151,8 @@ function FinancialPageContent() {
     };
 
     loadData();
-  }, [loadBalance, loadCredits]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (isLoading) {
     return (

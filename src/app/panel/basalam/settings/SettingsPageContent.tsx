@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { SettingToggle } from "@/components/basalam/SettingToggle";
 import { Tabs } from "@/components/basalam/Tabs";
 import { showToast } from "@/lib/toast";
@@ -20,6 +20,7 @@ export default function SettingsPageContent() {
   const [settings, setSettings] = useState<Setting[]>([]);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("product");
+  const initialLoadDone = useRef(false);
 
   const loadSettings = useCallback(async () => {
     try {
@@ -44,8 +45,12 @@ export default function SettingsPageContent() {
   }, []);
 
   useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
+    if (!initialLoadDone.current) {
+      initialLoadDone.current = true;
+      loadSettings();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSettingChange = async (settingId: number, title: string, newStatus: boolean) => {
     // Store previous settings for rollback

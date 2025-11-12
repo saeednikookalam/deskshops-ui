@@ -29,7 +29,7 @@ export function Sidebar() {
     // );
   }, []);
 
-  // Check basalam shop connection status
+  // Check basalam shop connection status (only once when basalam plugin is added to menu)
   useEffect(() => {
     const checkBasalamConnection = async () => {
       try {
@@ -49,7 +49,7 @@ export function Sidebar() {
     if (hasBasalamPlugin) {
       checkBasalamConnection();
     }
-  }, [menuPlugins, pathname]); // Re-check when pathname changes
+  }, [menuPlugins]); // Only check when menuPlugins change
 
   // Update nav data when plugin menus or basalam connection changes
   useEffect(() => {

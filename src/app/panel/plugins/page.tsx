@@ -15,10 +15,11 @@ export default function PluginsPage() {
   const [error, setError] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-  const [subscribedPluginIds, setSubscribedPluginIds] = useState<number[]>([]);
+  const [subscribedPluginIds, setSubscribedPluginIds] = useState<number[] | null>(null);
   const pageRef = useRef(1);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
+  const initialLoadDone = useRef(false);
 
   const loadPlugins = useCallback(async (pageNum: number, append: boolean = false) => {
     try {
@@ -33,9 +34,10 @@ export default function PluginsPage() {
 
       setPlugins(prev => {
         // Mark plugins with subscription status based on subscribedPluginIds
+        const currentSubscribedIds = subscribedPluginIds || [];
         const pluginsWithStatus = response.plugins.map(plugin => ({
           ...plugin,
-          has_subscription: plugin.id ? subscribedPluginIds.includes(plugin.id) : false
+          has_subscription: plugin.id ? currentSubscribedIds.includes(plugin.id) : false
         }));
 
         const nextPlugins = append ? [...prev, ...pluginsWithStatus] : pluginsWithStatus;
@@ -57,30 +59,41 @@ export default function PluginsPage() {
     }
   }, [subscribedPluginIds]);
 
-  // Load user subscriptions and plugins
+  // Load user subscriptions and plugins - only once
   useEffect(() => {
+    if (initialLoadDone.current) return;
+
     const loadData = async () => {
+      initialLoadDone.current = true;
+
       try {
         // Load subscriptions first
         const subscriptionsResponse = await pluginService.getUserSubscriptions();
-        setSubscribedPluginIds(subscriptionsResponse.plugin_ids || []);
+        const pluginIds = subscriptionsResponse.plugin_ids || [];
+        setSubscribedPluginIds(pluginIds);
+
+        // Then load plugins with subscription info
+        const response = await pluginService.getPluginsList(1, 20);
+        const pluginsWithStatus = response.plugins.map(plugin => ({
+          ...plugin,
+          has_subscription: plugin.id ? pluginIds.includes(plugin.id) : false
+        }));
+
+        setPlugins(pluginsWithStatus);
+        const totalAvailable = response.total ?? 0;
+        setHasMore(pluginsWithStatus.length < totalAvailable && response.plugins.length > 0);
       } catch (error) {
-        console.error('Error loading subscriptions:', error);
-        // Continue without subscriptions
+        console.error('Error loading data:', error);
+        setError(error instanceof Error ? error.message : 'خطا در بارگذاری اطلاعات');
         setSubscribedPluginIds([]);
+      } finally {
+        setLoading(false);
       }
     };
 
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Load plugins after subscriptions are loaded
-  useEffect(() => {
-    // Only load if we have attempted to load subscriptions (even if it failed)
-    if (subscribedPluginIds !== null) {
-      loadPlugins(1);
-    }
-  }, [subscribedPluginIds, loadPlugins]);
 
   // Infinite scroll implementation
   useEffect(() => {

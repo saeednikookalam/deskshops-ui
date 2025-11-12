@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { fileImporterService, Import } from "@/services/file-importer";
 import { UploadForm } from "@/components/file-importer/UploadForm";
 import { ImportsList } from "@/components/file-importer/ImportsList";
@@ -13,6 +13,7 @@ export default function FileImporterPage() {
   const [imports, setImports] = useState<Import[]>([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState<{ type: AlertType; message: string } | null>(null);
+  const initialLoadDone = useRef(false);
 
   const loadImports = useCallback(async () => {
     try {
@@ -26,7 +27,10 @@ export default function FileImporterPage() {
   }, []);
 
   useEffect(() => {
-    loadImports();
+    if (!initialLoadDone.current) {
+      initialLoadDone.current = true;
+      loadImports();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
