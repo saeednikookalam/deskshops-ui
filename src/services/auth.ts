@@ -30,6 +30,7 @@ export type VerifyOtpResponse = ApiResponse<AuthData>;
 export interface User {
   id: string;
   phone: string;
+  name?: string | null;
   [key: string]: unknown;
 }
 
@@ -110,6 +111,10 @@ class AuthService {
 
   async getUserSessions(): Promise<UserSession[]> {
     return await apiClient.get('/auth/sessions');
+  }
+
+  async updateName(name: string): Promise<User> {
+    return await apiClient.put('/auth/update-name', { name });
   }
 }
 

@@ -1,4 +1,3 @@
-import "@/css/satoshi.css";
 import "@/css/style.css";
 
 import "flatpickr/dist/flatpickr.min.css";
@@ -9,6 +8,13 @@ import NextTopLoader from "nextjs-toploader";
 import type { PropsWithChildren } from "react";
 import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
+import { Vazirmatn } from "next/font/google";
+
+const vazirmatn = Vazirmatn({
+  subsets: ["arabic"],
+  display: "swap",
+  variable: "--font-vazirmatn",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -22,7 +28,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
-      <body>
+      <body className={vazirmatn.className}>
         <Providers>
           <NextTopLoader color="#5750F1" showSpinner={false} />
           {children}
