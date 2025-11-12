@@ -6,10 +6,12 @@ import { pluginService, type Plugin } from "@/services/plugin";
 import { usePluginMenu } from "@/hooks/use-plugin-menu";
 import { formatMessage } from "@/lib/message-utils";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, use } from "react";
 
 export default function PluginDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
+  const router = useRouter();
   const { addPluginMenu } = usePluginMenu();
   const [plugin, setPlugin] = useState<Plugin | null>(null);
   const [loading, setLoading] = useState(true);
@@ -94,6 +96,11 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
       if (plugin?.id && plugin.status === 'active') {
         try {
           await addPluginMenu(plugin.id);
+
+          // If it's basalam plugin, redirect to shops page
+          if (plugin.name === 'basalam') {
+            router.push('/panel/basalam/shops');
+          }
         } catch (error) {
           console.error('Error adding plugin menu:', error);
         }

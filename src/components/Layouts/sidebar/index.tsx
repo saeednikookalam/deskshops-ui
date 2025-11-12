@@ -10,6 +10,7 @@ import { MenuItem } from "./menu-item";
 import { useSidebarContext } from "./sidebar-context";
 import { usePluginMenu } from "@/hooks/use-plugin-menu";
 import { DynamicIcon } from "@/components/ui/dynamic-icon";
+import { basalamService } from "@/services/basalam";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -17,6 +18,7 @@ export function Sidebar() {
   const { menuPlugins } = usePluginMenu();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [navData, setNavData] = useState<NavSection[]>([]);
+  const [isBasalamShopConnected, setIsBasalamShopConnected] = useState(false);
 
   const toggleExpanded = useCallback((title: string) => {
     setExpandedItems((prev) => (prev.includes(title) ? [] : [title]));
@@ -27,10 +29,32 @@ export function Sidebar() {
     // );
   }, []);
 
-  // Update nav data when plugin menus change
+  // Check basalam shop connection status
   useEffect(() => {
-    setNavData(generateNavData(menuPlugins));
-  }, [menuPlugins]);
+    const checkBasalamConnection = async () => {
+      try {
+        const status = await basalamService.getConnectionStatus();
+        setIsBasalamShopConnected(status.isConnected);
+      } catch (error) {
+        console.error('Error checking basalam connection:', error);
+        setIsBasalamShopConnected(false);
+      }
+    };
+
+    // Check if basalam plugin is in menu plugins
+    const hasBasalamPlugin = menuPlugins.some(
+      (plugin) => plugin.name === 'basalam' || plugin.path.includes('/basalam')
+    );
+
+    if (hasBasalamPlugin) {
+      checkBasalamConnection();
+    }
+  }, [menuPlugins, pathname]); // Re-check when pathname changes
+
+  // Update nav data when plugin menus or basalam connection changes
+  useEffect(() => {
+    setNavData(generateNavData(menuPlugins, isBasalamShopConnected));
+  }, [menuPlugins, isBasalamShopConnected]);
 
   useEffect(() => {
     // Keep collapsible open, when it's subpage is active
@@ -148,6 +172,7 @@ export function Sidebar() {
                                       as="link"
                                       href={subItem.url || '#'}
                                       isActive={pathname === subItem.url}
+                                      disabled={subItem.disabled}
                                     >
                                       <span>{subItem.title}</span>
                                     </MenuItem>

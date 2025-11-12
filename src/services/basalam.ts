@@ -67,15 +67,15 @@ export class BasalamService {
             // Handle both { user: {...} } and direct { title: "...", logo: "..." }
             if (data && typeof data === 'object') {
                 // Check if it's wrapped in 'user' property
-                if ('user' in data && data.user) {
+                if ('user' in data && data.user && data.user.title && data.user.logo) {
                     return {
                         isConnected: true,
                         shopName: data.user.title,
                         shopIcon: data.user.logo
                     };
                 }
-                // Check if it's direct user object
-                if ('title' in data && 'logo' in data) {
+                // Check if it's direct user object with actual values (not null)
+                if ('title' in data && 'logo' in data && data.title && data.logo) {
                     return {
                         isConnected: true,
                         shopName: data.title,

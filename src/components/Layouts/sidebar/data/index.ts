@@ -8,6 +8,7 @@ export interface NavItem {
   url?: string;
   items: NavItem[];
   iconSrc?: string;
+  disabled?: boolean;
 }
 
 export interface NavSection {
@@ -53,7 +54,10 @@ export const STATIC_NAV_DATA: NavSection[] = [
   },
 ];
 
-export function generateNavData(pluginMenus: MenuPlugin[]): NavSection[] {
+export function generateNavData(
+  pluginMenus: MenuPlugin[],
+  isBasalamShopConnected: boolean = false
+): NavSection[] {
   const staticData = [...STATIC_NAV_DATA];
 
   // If no plugin menus, return static data
@@ -88,30 +92,35 @@ export function generateNavData(pluginMenus: MenuPlugin[]): NavSection[] {
           icon: Icons.HomeIcon,
           url: "/panel/basalam/shops",
           items: [],
+          disabled: false, // فروشگاه‌ها همیشه فعال است
         },
         {
           title: "محصولات",
           icon: Icons.FourCircle,
           url: "/panel/basalam/products",
           items: [],
+          disabled: !isBasalamShopConnected, // غیرفعال اگر فروشگاه متصل نیست
         },
         {
           title: "سفارشات",
           icon: Icons.Table,
           url: "/panel/basalam/orders",
           items: [],
+          disabled: !isBasalamShopConnected, // غیرفعال اگر فروشگاه متصل نیست
         },
         {
           title: "درخواست‌ها",
           icon: Icons.Calendar,
           url: "/panel/basalam/requests",
           items: [],
+          disabled: !isBasalamShopConnected, // غیرفعال اگر فروشگاه متصل نیست
         },
         {
           title: "تنظیمات",
           icon: Icons.PieChart,
           url: "/panel/basalam/settings",
           items: [],
+          disabled: !isBasalamShopConnected, // غیرفعال اگر فروشگاه متصل نیست
         },
       ],
     };
