@@ -186,15 +186,36 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
   }
 
   const shouldShowSubscribeButton = plugin.status === 'active' && !plugin.has_subscription;
+  const isInactiveAndNotPurchased = plugin.status === 'inactive' && !plugin.has_subscription;
 
   return (
     <div className="space-y-6">
+      {/* Inactive Plugin Alert */}
+      {isInactiveAndNotPurchased && (
+        <div className="rounded-lg bg-yellow-light-4 dark:bg-yellow-dark/10 border border-yellow-dark/20 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0">
+              <svg className="h-6 w-6 text-yellow-dark" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-base font-semibold text-yellow-dark mb-1">
+                این پلاگین به زودی فعال می‌شود
+              </h3>
+              <p className="text-sm text-dark dark:text-white">
+                این پلاگین در حال حاضر فعال نیست و امکان خرید آن وجود ندارد. با فعال شدن پلاگین، می‌توانید از امکانات آن استفاده کنید.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Right: Plugin Details & Comments */}
-        <div className={`${(plugin.monthly_price || plugin.yearly_price) ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6`}>
+        <div className={`${(plugin.monthly_price || plugin.yearly_price) && !isInactiveAndNotPurchased ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6`}>
 
           {/* Plugin Details */}
           <div className="bg-white dark:bg-gray-dark rounded-[10px] shadow-1 p-6">
@@ -306,7 +327,7 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Left: Pricing & Purchase */}
-        {(plugin.monthly_price || plugin.yearly_price) && (
+        {(plugin.monthly_price || plugin.yearly_price) && !isInactiveAndNotPurchased && (
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-gray-dark rounded-[10px] shadow-1 p-6">
               <h3 className="text-lg font-bold text-dark dark:text-white mb-6 pb-3 border-b border-stroke dark:border-dark-3">

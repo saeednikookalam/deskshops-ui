@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Currency } from "@/components/ui/currency";
 import type { JSX, SVGProps } from "react";
 import Image from "next/image";
+import { useState } from "react";
 
 type PluginStatus = 'active' | 'inactive' | 'disabled';
 
@@ -41,16 +42,22 @@ export function PluginCard({
   icon: Icon = defaultIcon,
   onCardClick
 }: PropsType) {
+  const [imageError, setImageError] = useState(false);
+
   const truncateDescription = (text: string, maxLength: number = 150) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };
 
+  // پلاگین inactive که خریداری نشده
+  const isInactiveAndNotPurchased = status === 'inactive' && !hasSubscription;
+
   return (
     <div
       className={cn(
         "rounded-[10px] bg-white p-4 shadow-1 dark:bg-gray-dark transition-all hover:shadow-lg h-full flex flex-col cursor-pointer relative",
-        hasSubscription && "ring-1 ring-green/30"
+        hasSubscription && "ring-1 ring-green/30",
+        isInactiveAndNotPurchased && "opacity-70"
       )}
       data-status={status}
       onClick={onCardClick}
@@ -58,7 +65,7 @@ export function PluginCard({
       {/* Logo and Title */}
       <div className="flex items-center gap-3 mb-3">
         <div className="flex-shrink-0">
-          {logoUrl ? (
+          {logoUrl && !imageError ? (
             <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-2 dark:bg-dark-2 flex items-center justify-center">
               <Image
                 src={logoUrl}
@@ -66,13 +73,7 @@ export function PluginCard({
                 width={40}
                 height={40}
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  const parent = e.currentTarget.parentElement;
-                  if (parent) {
-                    parent.innerHTML = '<div class="text-primary w-8 h-8 flex items-center justify-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/></svg></div>';
-                  }
-                }}
+                onError={() => setImageError(true)}
               />
             </div>
           ) : (
@@ -94,6 +95,11 @@ export function PluginCard({
             </div>
           </div>
         )}
+        {isInactiveAndNotPurchased && (
+          <div className="flex-shrink-0 bg-yellow-dark text-white px-2 py-1 rounded-full text-xs font-medium">
+            به زودی
+          </div>
+        )}
       </div>
 
       {/* Description - Reduced Height */}
@@ -112,6 +118,15 @@ export function PluginCard({
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
               <span className="font-medium text-sm">اشتراک فعال</span>
+            </div>
+          </div>
+        ) : isInactiveAndNotPurchased ? (
+          <div className="w-full p-3 bg-yellow-light-4 dark:bg-yellow-dark/10 rounded-lg border border-yellow-dark/20">
+            <div className="flex items-center justify-center text-yellow-dark">
+              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+              </svg>
+              <span className="font-medium text-sm">به زودی</span>
             </div>
           </div>
         ) : (
