@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui-elements/button";
 import { StatusModal } from "@/components/ui/status-modal";
+import { Currency } from "@/components/ui/currency";
 import { pluginService, type Plugin } from "@/services/plugin";
 import { usePluginMenu } from "@/hooks/use-plugin-menu";
 import { formatMessage } from "@/lib/message-utils";
@@ -44,10 +45,6 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
 
     fetchPlugin();
   }, [resolvedParams.id]);
-
-  const formatPrice = (price: string) => {
-    return parseFloat(price).toLocaleString('fa-IR') + ' تومان';
-  };
 
   const getStatusTitle = () => {
     switch (purchaseStatus) {
@@ -329,7 +326,9 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <h4 className="font-medium text-dark dark:text-white">پلن ماهانه</h4>
-                        <p className="text-xl font-bold text-primary">{formatPrice(plugin.monthly_price)}</p>
+                        <p className="text-xl font-bold text-primary">
+                          <Currency value={parseFloat(plugin.monthly_price)} />
+                        </p>
                       </div>
                       <div className={`h-5 w-5 rounded-full border-2 ${
                         selectedDuration === 'monthly'
@@ -356,7 +355,9 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <h4 className="font-medium text-dark dark:text-white">پلن سالانه</h4>
-                        <p className="text-xl font-bold text-primary">{formatPrice(plugin.yearly_price)}</p>
+                        <p className="text-xl font-bold text-primary">
+                          <Currency value={parseFloat(plugin.yearly_price)} />
+                        </p>
                         {plugin.monthly_price && (
                           <p className="text-xs text-green mt-1">
                             صرفه‌جویی {Math.round((1 - (parseFloat(plugin.yearly_price) / 12) / parseFloat(plugin.monthly_price)) * 100)}%
