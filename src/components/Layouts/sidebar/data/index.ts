@@ -55,8 +55,7 @@ export const STATIC_NAV_DATA: NavSection[] = [
 ];
 
 export function generateNavData(
-  pluginMenus: MenuPlugin[],
-  isBasalamShopConnected: boolean = false
+  pluginMenus: MenuPlugin[]
 ): NavSection[] {
   const staticData = [...STATIC_NAV_DATA];
 
@@ -80,49 +79,14 @@ export function generateNavData(
       items: [],
     }));
 
-  // If basalam plugin exists, create collapsible menu with sub-items
+  // If basalam plugin exists, create simple menu item without sub-items
   if (basalamPlugin) {
     const basalamMenuItem: NavItem = {
       title: basalamPlugin.title,
       icon: basalamPlugin.icon ? DynamicIcon : Icons.PieChart,
       iconSrc: basalamPlugin.icon || undefined,
-      items: [
-        {
-          title: "فروشگاه‌ها",
-          icon: Icons.HomeIcon,
-          url: "/panel/basalam/shops",
-          items: [],
-          disabled: false, // فروشگاه‌ها همیشه فعال است
-        },
-        {
-          title: "محصولات",
-          icon: Icons.FourCircle,
-          url: "/panel/basalam/products",
-          items: [],
-          disabled: !isBasalamShopConnected, // غیرفعال اگر فروشگاه متصل نیست
-        },
-        {
-          title: "سفارشات",
-          icon: Icons.Table,
-          url: "/panel/basalam/orders",
-          items: [],
-          disabled: !isBasalamShopConnected, // غیرفعال اگر فروشگاه متصل نیست
-        },
-        {
-          title: "درخواست‌ها",
-          icon: Icons.Calendar,
-          url: "/panel/basalam/requests",
-          items: [],
-          disabled: !isBasalamShopConnected, // غیرفعال اگر فروشگاه متصل نیست
-        },
-        {
-          title: "تنظیمات",
-          icon: Icons.PieChart,
-          url: "/panel/basalam/settings",
-          items: [],
-          disabled: !isBasalamShopConnected, // غیرفعال اگر فروشگاه متصل نیست
-        },
-      ],
+      url: "/panel/basalam",
+      items: [], // No sub-menu items
     };
 
     pluginMenuItems.push(basalamMenuItem);

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { apiClient } from "@/lib/api-client";
+import { showToast } from "@/lib/toast";
 import {
   Table,
   TableBody,
@@ -11,6 +13,13 @@ import {
 } from "@/components/ui/table";
 import Image from "next/image";
 import { Currency } from "@/components/ui/currency";
+
+interface Shop {
+  id: number;
+  title: string;
+  logo: string | null;
+  type: number;
+}
 
 interface Product {
   id: number;
@@ -27,18 +36,20 @@ interface Product {
 
 export default function ProductsPageContent() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingShops, setLoadingShops] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [hasSkuFilter, setHasSkuFilter] = useState<string>("all");
+  const [shopFilter, setShopFilter] = useState<string>("all");
   const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
   const pageRef = useRef(1);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const loadProducts = useCallback(async (pageNum: number, append = false, _filters?: { status?: string; hasSku?: string }) => {
+  const loadProducts = useCallback(async (pageNum: number, append = false, filters?: { status?: string; shop?: string }) => {
     try {
       if (append) {
         setLoadingMore(true);
@@ -46,45 +57,71 @@ export default function ProductsPageContent() {
         setLoading(true);
       }
 
-      // TODO: Replace with actual API call
-      // const params = new URLSearchParams();
-      // params.append('page', String(pageNum));
-      // params.append('limit', '20');
-      //
-      // const activeStatus = filters?.status || statusFilter;
-      // const activeHasSku = filters?.hasSku || hasSkuFilter;
-      //
-      // if (activeStatus !== "all") {
-      //   params.append('status', activeStatus);
-      // }
-      // if (activeHasSku !== "all") {
-      //   params.append('has_sku', activeHasSku);
-      // }
-      //
-      // const response = await apiClient.getWithMeta<Product[]>(
-      //   `/products?${params.toString()}`
-      // );
+      const params = new URLSearchParams();
+      const limit = 20;
+      const offset = (pageNum - 1) * limit;
 
-      // Mock data for now
-      await new Promise(resolve => setTimeout(resolve, 500));
+      params.append('limit', String(limit));
+      params.append('offset', String(offset));
 
-      const mockProducts: Product[] = [];
-      setProducts(mockProducts);
-      setHasMore(false);
+      const activeStatus = filters?.status || statusFilter;
+      const activeShop = filters?.shop || shopFilter;
 
+      if (activeStatus !== "all") {
+        // Convert "active"/"inactive" to 1/0
+        const statusValue = activeStatus === "active" ? "1" : "0";
+        params.append('status', statusValue);
+      }
+      if (activeShop !== "all") {
+        params.append('shop_id', activeShop);
+      }
+
+      const response = await apiClient.getWithMeta<Product[]>(
+        `/products?${params.toString()}`
+      );
+
+      if (response.data) {
+        if (append) {
+          setProducts((prev) => [...prev, ...response.data]);
+        } else {
+          setProducts(response.data);
+        }
+        setHasMore(response.meta?.has_more === true);
+      }
     } catch (error) {
       console.error("Error loading products:", error);
+      showToast.error("خطا در بارگذاری محصولات");
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, []); // Remove dependencies - filters are passed as parameters
+  }, [statusFilter, shopFilter]);
 
+  // Load shops
+  useEffect(() => {
+    const loadShops = async () => {
+      try {
+        setLoadingShops(true);
+        const response = await apiClient.get<Shop[]>('/shops');
+        if (response) {
+          setShops(response);
+        }
+      } catch (error) {
+        console.error("Error loading shops:", error);
+        showToast.error("خطا در بارگذاری فروشگاه‌ها");
+      } finally {
+        setLoadingShops(false);
+      }
+    };
+
+    loadShops();
+  }, []);
+
+  // Load products on mount and when filters change
   useEffect(() => {
     pageRef.current = 1;
     loadProducts(1, false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, hasSkuFilter]); // Reload when filters change
+  }, [statusFilter, shopFilter, loadProducts]);
 
   // Infinite scroll implementation
   useEffect(() => {
@@ -116,25 +153,62 @@ export default function ProductsPageContent() {
         observerRef.current.disconnect();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasMore, loadingMore]);
+  }, [hasMore, loadingMore, loadProducts]);
+
+  const handleSyncProducts = async () => {
+    try {
+      setSyncing(true);
+
+      const syncFilters = shopFilter !== "all" ? { shop_id: Number(shopFilter) } : null;
+
+      const response = await apiClient.postWithFullResponse('/plugins/basalam/sync', {
+        entity_type: 1, // 1 = Products
+        filters: syncFilters,
+      });
+
+      const message = response.message || "درخواست به‌روزرسانی محصولات با موفقیت ثبت شد";
+
+      if (response.status >= 200 && response.status < 300) {
+        showToast.success(message);
+      } else if (response.status >= 400 && response.status < 500) {
+        showToast.warning(message);
+      } else {
+        showToast.error(message);
+      }
+    } catch (error) {
+      console.error("Error syncing products:", error);
+      const errorMessage = error instanceof Error ? error.message : "خطا در ثبت درخواست به‌روزرسانی";
+      showToast.error(errorMessage);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const getStatusLabel = (status: string): string => {
     return status === "active" ? "فعال" : "غیرفعال";
   };
 
-  const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value);
-    pageRef.current = 1;
-    setSelectedProducts(new Set());
-    loadProducts(1, false, { status: value, hasSku: hasSkuFilter });
+  const getShopTypeLabel = (type: number): string => {
+    switch (type) {
+      case 1:
+        return "بسلام";
+      case 2:
+        return "دیجی‌کالا";
+      case 3:
+        return "ترب";
+      default:
+        return "نامشخص";
+    }
   };
 
-  const handleHasSkuFilterChange = (value: string) => {
-    setHasSkuFilter(value);
-    pageRef.current = 1;
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
     setSelectedProducts(new Set());
-    loadProducts(1, false, { status: statusFilter, hasSku: value });
+  };
+
+  const handleShopFilterChange = (value: string) => {
+    setShopFilter(value);
+    setSelectedProducts(new Set());
   };
 
   const handleSelectAll = (checked: boolean) => {
@@ -171,59 +245,89 @@ export default function ProductsPageContent() {
 
   return (
     <div className="rounded-[10px] bg-white p-8 shadow-1 dark:bg-gray-dark dark:shadow-card">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-4">
-          <h2 className="text-xl font-semibold text-dark dark:text-white">
-            مدیریت محصولات
-          </h2>
-          {selectedProducts.size > 0 && (
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-              {selectedProducts.size} انتخاب شده
-            </span>
-          )}
-        </div>
-        <div className="flex gap-2">
-          {selectedProducts.size > 0 && (
-            <button
-              onClick={() => setSelectedProducts(new Set())}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-stroke px-4 py-2.5 text-sm font-medium text-dark transition-all hover:bg-gray-2 dark:border-dark-3 dark:text-white dark:hover:bg-dark-2"
+      {/* Filters and Actions */}
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        {/* Filters Section */}
+        <div className="flex flex-1 flex-col gap-4 sm:flex-row">
+          <div className="flex-1">
+            <label className="mb-2 block text-sm font-medium text-dark dark:text-white">
+              فروشگاه
+            </label>
+            <select
+              value={shopFilter}
+              onChange={(e) => handleShopFilterChange(e.target.value)}
+              disabled={loadingShops}
+              className="w-full rounded-lg border border-stroke bg-transparent px-4 py-2.5 text-dark outline-none transition focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed dark:border-dark-3 dark:bg-dark-2 dark:text-white"
             >
-              لغو انتخاب
-            </button>
+              <option value="all">همه فروشگاه‌ها</option>
+              {shops.map((shop) => (
+                <option key={shop.id} value={shop.id}>
+                  {shop.title} - {getShopTypeLabel(shop.type)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex-1">
+            <label className="mb-2 block text-sm font-medium text-dark dark:text-white">
+              وضعیت محصول
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => handleStatusFilterChange(e.target.value)}
+              className="w-full rounded-lg border border-stroke bg-transparent px-4 py-2.5 text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white"
+            >
+              <option value="all">همه محصولات</option>
+              <option value="active">فعال</option>
+              <option value="inactive">غیرفعال</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Actions Section */}
+        <div className="flex flex-wrap items-center gap-3 lg:flex-nowrap">
+          {selectedProducts.size > 0 && (
+            <>
+              <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary whitespace-nowrap">
+                {selectedProducts.size} انتخاب شده
+              </span>
+              <button
+                onClick={() => setSelectedProducts(new Set())}
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-stroke px-4 py-2.5 text-sm font-medium text-dark transition-all hover:bg-gray-2 dark:border-dark-3 dark:text-white dark:hover:bg-dark-2 whitespace-nowrap"
+              >
+                لغو انتخاب
+              </button>
+            </>
           )}
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row">
-        <div className="flex-1">
-          <label className="mb-2 block text-sm font-medium text-dark dark:text-white">
-            وضعیت محصول
-          </label>
-          <select
-            value={statusFilter}
-            onChange={(e) => handleStatusFilterChange(e.target.value)}
-            className="w-full rounded-lg border border-stroke bg-transparent px-4 py-2.5 text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white"
+          <button
+            onClick={handleSyncProducts}
+            disabled={syncing}
+            className="inline-flex items-center justify-center gap-2.5 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white transition-all hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
-            <option value="all">همه محصولات</option>
-            <option value="active">فعال</option>
-            <option value="inactive">غیرفعال</option>
-          </select>
-        </div>
-
-        <div className="flex-1">
-          <label className="mb-2 block text-sm font-medium text-dark dark:text-white">
-            وضعیت SKU
-          </label>
-          <select
-            value={hasSkuFilter}
-            onChange={(e) => handleHasSkuFilterChange(e.target.value)}
-            className="w-full rounded-lg border border-stroke bg-transparent px-4 py-2.5 text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white"
-          >
-            <option value="all">همه</option>
-            <option value="true">دارای SKU</option>
-            <option value="false">بدون SKU</option>
-          </select>
+            {syncing ? (
+              <>
+                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></span>
+                در حال ثبت درخواست...
+              </>
+            ) : (
+              <>
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                درخواست به‌روزرسانی
+              </>
+            )}
+          </button>
         </div>
       </div>
 
@@ -249,6 +353,8 @@ export default function ProductsPageContent() {
           </h3>
           <p className="mb-6 text-center text-base text-body-color dark:text-dark-6">
             در حال حاضر محصولی برای نمایش وجود ندارد.
+            <br />
+            برای دریافت محصولات از دکمه «درخواست به‌روزرسانی» استفاده کنید.
           </p>
         </div>
       ) : (

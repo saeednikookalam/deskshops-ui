@@ -23,6 +23,13 @@ interface Photo {
   original: string;
 }
 
+interface Shop {
+  id: number;
+  title: string;
+  logo: string | null;
+  type: number;
+}
+
 interface BasalamProduct {
   id: number;
   sku: string | null;
@@ -40,19 +47,21 @@ interface BasalamProduct {
 
 export default function ProductsPageContent() {
   const [products, setProducts] = useState<BasalamProduct[]>([]);
+  const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingShops, setLoadingShops] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [hasSkuFilter, setHasSkuFilter] = useState<string>("all");
+  const [shopFilter, setShopFilter] = useState<string>("all");
   const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
   const pageRef = useRef(1);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
   const initialLoadDone = useRef(false);
 
-  const loadProducts = useCallback(async (pageNum: number, append = false, filters?: { status?: string; hasSku?: string }) => {
+  const loadProducts = useCallback(async (pageNum: number, append = false, filters?: { status?: string; shop?: string }) => {
     try {
       if (append) {
         setLoadingMore(true);
@@ -65,13 +74,13 @@ export default function ProductsPageContent() {
       params.append('limit', '20');
 
       const activeStatus = filters?.status || statusFilter;
-      const activeHasSku = filters?.hasSku || hasSkuFilter;
+      const activeShop = filters?.shop || shopFilter;
 
       if (activeStatus !== "all") {
         params.append('status', activeStatus);
       }
-      if (activeHasSku !== "all") {
-        params.append('has_sku', activeHasSku);
+      if (activeShop !== "all") {
+        params.append('shop_id', activeShop);
       }
 
       const response = await apiClient.getWithMeta<BasalamProduct[]>(
@@ -93,7 +102,27 @@ export default function ProductsPageContent() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [statusFilter, hasSkuFilter]);
+  }, [statusFilter, shopFilter]);
+
+  // Load shops
+  useEffect(() => {
+    const loadShops = async () => {
+      try {
+        setLoadingShops(true);
+        const response = await apiClient.get<Shop[]>('/shops');
+        if (response) {
+          setShops(response);
+        }
+      } catch (error) {
+        console.error("Error loading shops:", error);
+        showToast.error("خطا در بارگذاری فروشگاه‌ها");
+      } finally {
+        setLoadingShops(false);
+      }
+    };
+
+    loadShops();
+  }, []);
 
   // Initial load
   useEffect(() => {
@@ -111,7 +140,7 @@ export default function ProductsPageContent() {
       loadProducts(1, false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, hasSkuFilter]);
+  }, [statusFilter, shopFilter]);
 
   // Infinite scroll implementation
   useEffect(() => {
@@ -149,9 +178,12 @@ export default function ProductsPageContent() {
   const handleSyncProducts = async () => {
     try {
       setSyncing(true);
+
+      const syncFilters = shopFilter !== "all" ? { shop_id: Number(shopFilter) } : null;
+
       const response = await apiClient.postWithFullResponse('/plugins/basalam/sync', {
         entity_type: 1, // 1 = Products
-        filters: null,
+        filters: syncFilters,
       });
 
       const message = response.message || "درخواست به‌روزرسانی محصولات با موفقیت ثبت شد";
@@ -180,14 +212,14 @@ export default function ProductsPageContent() {
     setStatusFilter(value);
     pageRef.current = 1;
     setSelectedProducts(new Set());
-    loadProducts(1, false, { status: value, hasSku: hasSkuFilter });
+    loadProducts(1, false, { status: value, shop: shopFilter });
   };
 
-  const handleHasSkuFilterChange = (value: string) => {
-    setHasSkuFilter(value);
+  const handleShopFilterChange = (value: string) => {
+    setShopFilter(value);
     pageRef.current = 1;
     setSelectedProducts(new Set());
-    loadProducts(1, false, { status: statusFilter, hasSku: value });
+    loadProducts(1, false, { status: statusFilter, shop: value });
   };
 
   const handleSelectAll = (checked: boolean) => {
@@ -280,6 +312,25 @@ export default function ProductsPageContent() {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row">
         <div className="flex-1">
           <label className="mb-2 block text-sm font-medium text-dark dark:text-white">
+            فروشگاه
+          </label>
+          <select
+            value={shopFilter}
+            onChange={(e) => handleShopFilterChange(e.target.value)}
+            disabled={loadingShops}
+            className="w-full rounded-lg border border-stroke bg-transparent px-4 py-2.5 text-dark outline-none transition focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed dark:border-dark-3 dark:bg-dark-2 dark:text-white"
+          >
+            <option value="all">همه فروشگاه‌ها</option>
+            {shops.map((shop) => (
+              <option key={shop.id} value={shop.id}>
+                {shop.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex-1">
+          <label className="mb-2 block text-sm font-medium text-dark dark:text-white">
             وضعیت محصول
           </label>
           <select
@@ -290,21 +341,6 @@ export default function ProductsPageContent() {
             <option value="all">همه محصولات</option>
             <option value="active">فعال</option>
             <option value="inactive">غیرفعال</option>
-          </select>
-        </div>
-
-        <div className="flex-1">
-          <label className="mb-2 block text-sm font-medium text-dark dark:text-white">
-            وضعیت SKU
-          </label>
-          <select
-            value={hasSkuFilter}
-            onChange={(e) => handleHasSkuFilterChange(e.target.value)}
-            className="w-full rounded-lg border border-stroke bg-transparent px-4 py-2.5 text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white"
-          >
-            <option value="all">همه</option>
-            <option value="true">دارای SKU</option>
-            <option value="false">بدون SKU</option>
           </select>
         </div>
       </div>

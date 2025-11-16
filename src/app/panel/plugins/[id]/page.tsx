@@ -94,9 +94,9 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
         try {
           await addPluginMenu(plugin.id);
 
-          // If it's basalam plugin, redirect to shops page
+          // If it's basalam plugin, redirect to main page
           if (plugin.name === 'basalam') {
-            router.push('/panel/basalam/shops');
+            router.push('/panel/basalam');
           }
         } catch (error) {
           console.error('Error adding plugin menu:', error);

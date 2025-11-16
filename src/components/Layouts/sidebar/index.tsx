@@ -10,7 +10,6 @@ import { MenuItem } from "./menu-item";
 import { useSidebarContext } from "./sidebar-context";
 import { usePluginMenu } from "@/hooks/use-plugin-menu";
 import { DynamicIcon } from "@/components/ui/dynamic-icon";
-import { basalamService } from "@/services/basalam";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -18,7 +17,6 @@ export function Sidebar() {
   const { menuPlugins } = usePluginMenu();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [navData, setNavData] = useState<NavSection[]>([]);
-  const [isBasalamShopConnected, setIsBasalamShopConnected] = useState(false);
 
   const toggleExpanded = useCallback((title: string) => {
     setExpandedItems((prev) => (prev.includes(title) ? [] : [title]));
@@ -29,32 +27,10 @@ export function Sidebar() {
     // );
   }, []);
 
-  // Check basalam shop connection status (only once when basalam plugin is added to menu)
+  // Update nav data when plugin menus change
   useEffect(() => {
-    const checkBasalamConnection = async () => {
-      try {
-        const status = await basalamService.getConnectionStatus();
-        setIsBasalamShopConnected(status.isConnected);
-      } catch (error) {
-        console.error('Error checking basalam connection:', error);
-        setIsBasalamShopConnected(false);
-      }
-    };
-
-    // Check if basalam plugin is in menu plugins
-    const hasBasalamPlugin = menuPlugins.some(
-      (plugin) => plugin.name === 'basalam' || plugin.path.includes('/basalam')
-    );
-
-    if (hasBasalamPlugin) {
-      checkBasalamConnection();
-    }
-  }, [menuPlugins]); // Only check when menuPlugins change
-
-  // Update nav data when plugin menus or basalam connection changes
-  useEffect(() => {
-    setNavData(generateNavData(menuPlugins, isBasalamShopConnected));
-  }, [menuPlugins, isBasalamShopConnected]);
+    setNavData(generateNavData(menuPlugins));
+  }, [menuPlugins]);
 
   useEffect(() => {
     // Keep collapsible open, when it's subpage is active

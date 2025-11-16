@@ -39,63 +39,30 @@ export class BasalamService {
 
     async getConnectionStatus(userId?: string): Promise<BasalamConnectionStatus> {
         try {
-            // Get user ID from token if not provided
-            let userIdToUse = userId;
-            if (!userIdToUse && typeof window !== 'undefined') {
-                const token = getToken();
-                if (token) {
-                    // Decode JWT to get user ID (assuming it's in the token)
-                    try {
-                        const payload = JSON.parse(atob(token.split('.')[1]));
-                        userIdToUse = payload.user_id || payload.sub || payload.id;
-                    } catch (e) {
-                        console.error('Error parsing token:', e);
-                    }
-                }
-            }
-
-            if (!userIdToUse) {
-                return {isConnected: false};
-            }
-
-            // API response format: { user: { title: "...", logo: "..." } } or { title: "...", logo: "..." }
-            // If data is empty/null => not connected
-            // If data has values => connected
-            const data = await apiClient.get<{
-                user?: { title?: string; logo?: string };
+            // Get all shops
+            const shops = await apiClient.get<Array<{
+                id?: number;
                 title?: string;
                 logo?: string;
-            } | null>(
-                `/plugins/basalam/check-user/${userIdToUse}`
-            );
+                type?: number;
+                [key: string]: unknown;
+            }>>('/shops');
 
-            // If response is null, undefined, or empty object => not connected
-            if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
+            // Find shop with type = 1 (Basalam shop)
+            const basalamShop = shops?.find(shop => shop.type === 1);
+
+            // If no basalam shop found => not connected
+            if (!basalamShop) {
                 return {isConnected: false};
             }
 
-            // If we have data, it means connected
-            // Handle both { user: {...} } and direct { title: "...", logo: "..." }
-            if (typeof data === 'object') {
-                // Check if it's wrapped in 'user' property
-                if ('user' in data && data.user) {
-                    return {
-                        isConnected: true,
-                        shopName: data.user.title,
-                        shopIcon: data.user.logo
-                    };
-                }
-                // Check if it's direct user object
-                if ('title' in data || 'logo' in data) {
-                    return {
-                        isConnected: true,
-                        shopName: data.title,
-                        shopIcon: data.logo
-                    };
-                }
-            }
-
-            return {isConnected: false};
+            // If basalam shop found => connected
+            return {
+                isConnected: true,
+                shopName: basalamShop.title,
+                shopIcon: basalamShop.logo,
+                shopId: basalamShop.id?.toString()
+            };
         } catch (error) {
             console.error('Error fetching Basalam connection status:', error);
             return {
