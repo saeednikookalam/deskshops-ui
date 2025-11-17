@@ -39,6 +39,12 @@ export const STATIC_NAV_DATA: NavSection[] = [
         items: [],
       },
       {
+        title: "درخواست‌ها",
+        icon: Icons.Calendar,
+        url: "/panel/requests",
+        items: [],
+      },
+      {
         title: "بخش مالی",
         icon: Icons.Wallet,
         url: "/panel/financial",

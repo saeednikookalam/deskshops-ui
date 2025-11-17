@@ -7,6 +7,6 @@ const RequestsPageContent = dynamic(() => import("./RequestsPageContent"), {
   loading: () => <div className="p-6">در حال بارگذاری...</div>,
 });
 
-export default function BasalamRequestsPage() {
+export default function RequestsPage() {
   return <RequestsPageContent />;
 }
