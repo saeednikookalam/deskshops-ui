@@ -77,7 +77,7 @@ export default function ProductsPageContent() {
       }
 
       const response = await apiClient.getWithMeta<Product[]>(
-        `/products/?${params.toString()}`
+        `/products?${params.toString()}`
       );
 
       if (response.data) {
@@ -102,7 +102,7 @@ export default function ProductsPageContent() {
     const loadShops = async () => {
       try {
         setLoadingShops(true);
-        const response = await apiClient.get<Shop[]>('/shops/');
+        const response = await apiClient.get<Shop[]>('/shops');
         if (response) {
           setShops(response);
         }
@@ -161,7 +161,7 @@ export default function ProductsPageContent() {
 
       const syncFilters = shopFilter !== "all" ? { shop_id: Number(shopFilter) } : null;
 
-      const response = await apiClient.postWithFullResponse('/plugins/basalam/sync/', {
+      const response = await apiClient.postWithFullResponse('/plugins/basalam/sync', {
         entity_type: 1, // 1 = Products
         filters: syncFilters,
       });
