@@ -131,13 +131,7 @@ class ApiClient {
                 throw new ApiError('درخواست شما منقضی شد. لطفاً دوباره تلاش کنید.');
             }
             if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-                // اگه token داریم، احتمالاً 401 هست (CORS جلوی دیدن status رو گرفته)
-                if (getToken()) {
-                    this.clearTokensAndRedirect();
-                    throw new ApiError('Session expired', 401);
-                }
-
-                // اگه token نداریم، مشکل واقعاً سرور یا اینترنته
+                // مشکل سرور یا اینترنته، نه لزوماً 401
                 this.handleFetchError();
             }
             // اگر ApiError از handleResponse آمده، همان را پاس بده
