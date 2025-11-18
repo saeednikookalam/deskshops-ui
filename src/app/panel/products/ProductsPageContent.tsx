@@ -48,6 +48,12 @@ export default function ProductsPageContent() {
   const pageRef = useRef(1);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
+  const statusFilterRef = useRef<string>("all");
+  const shopFilterRef = useRef<string>("all");
+
+  // Keep refs in sync with state
+  statusFilterRef.current = statusFilter;
+  shopFilterRef.current = shopFilter;
 
   const loadProducts = useCallback(async (pageNum: number, append = false, filters?: { status?: string; shop?: string }) => {
     try {
@@ -64,8 +70,8 @@ export default function ProductsPageContent() {
       params.append('limit', String(limit));
       params.append('offset', String(offset));
 
-      const activeStatus = filters?.status || statusFilter;
-      const activeShop = filters?.shop || shopFilter;
+      const activeStatus = filters?.status || statusFilterRef.current;
+      const activeShop = filters?.shop || shopFilterRef.current;
 
       if (activeStatus !== "all") {
         // Convert "active"/"inactive" to 1/0
@@ -95,7 +101,7 @@ export default function ProductsPageContent() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [statusFilter, shopFilter]);
+  }, []);
 
   // Load shops
   useEffect(() => {
@@ -121,7 +127,8 @@ export default function ProductsPageContent() {
   useEffect(() => {
     pageRef.current = 1;
     loadProducts(1, false);
-  }, [statusFilter, shopFilter, loadProducts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter, shopFilter]);
 
   // Infinite scroll implementation
   useEffect(() => {
@@ -153,7 +160,8 @@ export default function ProductsPageContent() {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore, loadingMore, loadProducts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasMore, loadingMore]);
 
   const handleSyncProducts = async () => {
     try {

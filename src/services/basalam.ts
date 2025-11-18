@@ -37,7 +37,7 @@ export class BasalamService {
         'customer.chat.write'               // ارسال گفت‌وگو
     ];
 
-    async getConnectionStatus(userId?: string): Promise<BasalamConnectionStatus> {
+    async getConnectionStatus(): Promise<BasalamConnectionStatus> {
         try {
             // Get all shops
             const shops = await apiClient.get<Array<{
@@ -164,34 +164,6 @@ export class BasalamService {
         } catch (e) {
             console.error('Error decoding state:', e);
             return {valid: false};
-        }
-    }
-
-    async disconnectShop(): Promise<void> {
-        try {
-            await apiClient.post('/api/basalam/disconnect');
-        } catch (error) {
-            console.error('Error disconnecting Basalam shop:', error);
-            throw error;
-        }
-    }
-
-    async getShopInfo(): Promise<{
-        shopName: string;
-        shopIcon: string;
-        products: number;
-        orders: number;
-    } | null> {
-        try {
-            return await apiClient.get<{
-                shopName: string;
-                shopIcon: string;
-                products: number;
-                orders: number;
-            }>('/api/basalam/shop-info');
-        } catch (error) {
-            console.error('Error fetching shop info:', error);
-            return null;
         }
     }
 }
