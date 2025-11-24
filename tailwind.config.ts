@@ -19,6 +19,14 @@ const config: Config = {
         current: "currentColor",
         transparent: "transparent",
         white: "#FFFFFF",
+        // Landing page colors (from color_guide.md)
+        "warm-white": "#FFF8F6",
+        "deep-black": "#121212",
+        "calm-green": "#2E7D32",
+        "dark-green": "#1B5E20",
+        "neutral-gray": "#9E9E9E",
+        "light-gray": "#F2F2F2",
+        // Original panel colors
         primary: "#5750F1",
         stroke: "#E6EBF1",
         "stroke-dark": "#27303E",
@@ -361,6 +369,18 @@ const config: Config = {
           "0%": { transform: "translateX(100%)", opacity: "0" },
           "100%": { transform: "translateX(0)", opacity: "1" },
         },
+        "fade-in": {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "scroll-right": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        "scroll-left": {
+          "0%": { transform: "translateX(-50%)" },
+          "100%": { transform: "translateX(0)" },
+        },
       },
       animation: {
         linspin: "linspin 1568.2353ms linear infinite",
@@ -374,6 +394,9 @@ const config: Config = {
         topbottom: "topbottom 60s infinite alternate linear",
         bottomtop: "bottomtop 60s infinite alternate linear",
         "slide-in-right": "slide-in-right 0.3s ease-out",
+        "fade-in": "fade-in 0.6s ease-out forwards",
+        "scroll-right": "scroll-right 20s linear infinite",
+        "scroll-left": "scroll-left 20s linear infinite",
         "spin-1.5": "spin 1.5s linear infinite",
         "spin-2": "spin 2s linear infinite",
         "spin-3": "spin 3s linear infinite",

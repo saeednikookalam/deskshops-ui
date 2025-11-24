@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
-      <body className={vazirmatn.className}>
+      <body className={`${vazirmatn.className} overflow-x-hidden`}>
         <Providers>
           <NextTopLoader color="#5750F1" showSpinner={false} />
           {children}
