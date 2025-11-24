@@ -18,13 +18,15 @@ class ApiError extends Error {
 class ApiClient {
     // Helper to normalize endpoints with trailing slash
     private normalizeEndpoint(endpoint: string): string {
-        // If endpoint has query params, add slash before ?
+        // If endpoint has query params, DO NOT add trailing slash before ?
+        // API server expects: /path?param=value (NOT /path/?param=value)
         if (endpoint.includes('?')) {
             const [path, query] = endpoint.split('?');
-            const normalizedPath = path.endsWith('/') ? path : `${path}/`;
+            // Remove trailing slash if exists before query params
+            const normalizedPath = path.endsWith('/') ? path.slice(0, -1) : path;
             return `${normalizedPath}?${query}`;
         }
-        // Otherwise just add trailing slash if not present
+        // For endpoints without query params, add trailing slash
         return endpoint.endsWith('/') ? endpoint : `${endpoint}/`;
     }
 
