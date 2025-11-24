@@ -108,7 +108,7 @@ export default function ProductsPageContent() {
     const loadShops = async () => {
       try {
         setLoadingShops(true);
-        const response = await apiClient.get<Shop[]>('/shops');
+        const response = await apiClient.get<Shop[]>('/shops/');
         if (response) {
           setShops(response);
         }

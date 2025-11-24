@@ -16,6 +16,18 @@ class ApiError extends Error {
 }
 
 class ApiClient {
+    // Helper to normalize endpoints with trailing slash
+    private normalizeEndpoint(endpoint: string): string {
+        // If endpoint has query params, add slash before ?
+        if (endpoint.includes('?')) {
+            const [path, query] = endpoint.split('?');
+            const normalizedPath = path.endsWith('/') ? path : `${path}/`;
+            return `${normalizedPath}?${query}`;
+        }
+        // Otherwise just add trailing slash if not present
+        return endpoint.endsWith('/') ? endpoint : `${endpoint}/`;
+    }
+
     private getAuthHeaders(): Record<string, string> {
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
@@ -117,7 +129,8 @@ class ApiClient {
                 if (token) headers['Authorization'] = `Bearer ${token}`;
             }
 
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            const normalizedEndpoint = this.normalizeEndpoint(endpoint);
+            const response = await fetch(`${API_BASE_URL}${normalizedEndpoint}`, {
                 method,
                 headers,
                 body: opts?.isFormData ? (opts?.body as BodyInit) : opts?.body ? JSON.stringify(opts.body) : undefined,
@@ -162,45 +175,47 @@ class ApiClient {
 
     // برای API هایی که نیاز به دسترسی به meta دارند
     async getWithMeta<T = unknown>(endpoint: string): Promise<{ data: T; meta?: Record<string, unknown> }> {
+        const headers = this.getAuthHeaders();
+        const normalizedEndpoint = this.normalizeEndpoint(endpoint);
+
+        let response: Response;
         try {
-            const headers = this.getAuthHeaders();
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            response = await fetch(`${API_BASE_URL}${normalizedEndpoint}`, {
                 method: 'GET',
                 headers,
                 cache: 'no-store',
             });
-
-            if (response.status === 401 || response.status === 419) {
-                this.clearTokensAndRedirect();
-                throw new ApiError('Unauthorized', response.status);
-            }
-
-            if (!response.ok) {
-                const data = await this.parseBodySafely(response);
-                const messageFromObject =
-                    typeof data === 'object' && data !== null && 'message' in data &&
-                    typeof (data as { message?: unknown }).message === 'string'
-                        ? (data as { message: string }).message
-                        : null;
-                const msg = messageFromObject || `HTTP error ${response.status}`;
-                throw new ApiError(msg, response.status, data);
-            }
-
-            const jsonResponse = await response.json();
-
-            // برگرداندن data و meta
-            if (jsonResponse && typeof jsonResponse === 'object') {
-                return {
-                    data: jsonResponse.data as T,
-                    meta: jsonResponse.meta as Record<string, unknown> | undefined
-                };
-            }
-
-            return { data: jsonResponse as T };
-        } catch (error) {
-            if (error instanceof ApiError) throw error;
+        } catch {
             throw new ApiError('خطا در ارتباط با سرور');
         }
+
+        if (response.status === 401 || response.status === 419) {
+            this.clearTokensAndRedirect();
+            throw new ApiError('Unauthorized', response.status);
+        }
+
+        if (!response.ok) {
+            const data = await this.parseBodySafely(response);
+            const messageFromObject =
+                typeof data === 'object' && data !== null && 'message' in data &&
+                typeof (data as { message?: unknown }).message === 'string'
+                    ? (data as { message: string }).message
+                    : null;
+            const msg = messageFromObject || `HTTP error ${response.status}`;
+            throw new ApiError(msg, response.status, data);
+        }
+
+        const jsonResponse = await response.json();
+
+        // برگرداندن data و meta
+        if (jsonResponse && typeof jsonResponse === 'object') {
+            return {
+                data: jsonResponse.data as T,
+                meta: jsonResponse.meta as Record<string, unknown> | undefined
+            };
+        }
+
+        return { data: jsonResponse as T };
     }
 
     // برای ریکوئست‌های احراز هویت (بدون header توکن)
@@ -211,7 +226,8 @@ class ApiClient {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            const normalizedEndpoint = this.normalizeEndpoint(endpoint);
+            const response = await fetch(`${API_BASE_URL}${normalizedEndpoint}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: body ? JSON.stringify(body) : undefined,
@@ -239,48 +255,53 @@ class ApiClient {
 
     // برای دریافت کل response (شامل status, message, data)
     async postWithFullResponse<T = unknown>(endpoint: string, body?: unknown): Promise<{ status: number; message?: string; data?: T }> {
+        const headers = this.getAuthHeaders();
+        const normalizedEndpoint = this.normalizeEndpoint(endpoint);
+
+        let response: Response;
         try {
-            const headers = this.getAuthHeaders();
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            response = await fetch(`${API_BASE_URL}${normalizedEndpoint}`, {
                 method: 'POST',
                 headers,
                 body: body ? JSON.stringify(body) : undefined,
                 signal: AbortSignal.timeout(10000),
                 cache: 'no-store',
             });
-
-            if (response.status === 401 || response.status === 419) {
-                this.clearTokensAndRedirect();
-                throw new ApiError('Unauthorized', response.status);
-            }
-
-            if (!response.ok) {
-                const data = await this.parseBodySafely(response);
-                const messageFromObject =
-                    typeof data === 'object' && data !== null && 'message' in data &&
-                    typeof (data as { message?: unknown }).message === 'string'
-                        ? (data as { message: string }).message
-                        : null;
-                const msg = messageFromObject || `HTTP error ${response.status}`;
-                throw new ApiError(msg, response.status, data);
-            }
-
-            const jsonResponse = await response.json();
-
-            // برگرداندن کل response (با message)
-            if (jsonResponse && typeof jsonResponse === 'object') {
-                return {
-                    status: jsonResponse.status || response.status,
-                    message: jsonResponse.message,
-                    data: jsonResponse.data as T
-                };
-            }
-
-            return { status: response.status, data: jsonResponse as T };
         } catch (error) {
-            if (error instanceof ApiError) throw error;
+            if (error instanceof DOMException && error.name === 'TimeoutError') {
+                throw new ApiError('درخواست شما منقضی شد. لطفاً دوباره تلاش کنید.');
+            }
             throw new ApiError('خطا در ارتباط با سرور');
         }
+
+        if (response.status === 401 || response.status === 419) {
+            this.clearTokensAndRedirect();
+            throw new ApiError('Unauthorized', response.status);
+        }
+
+        if (!response.ok) {
+            const data = await this.parseBodySafely(response);
+            const messageFromObject =
+                typeof data === 'object' && data !== null && 'message' in data &&
+                typeof (data as { message?: unknown }).message === 'string'
+                    ? (data as { message: string }).message
+                    : null;
+            const msg = messageFromObject || `HTTP error ${response.status}`;
+            throw new ApiError(msg, response.status, data);
+        }
+
+        const jsonResponse = await response.json();
+
+        // برگرداندن کل response (با message)
+        if (jsonResponse && typeof jsonResponse === 'object') {
+            return {
+                status: jsonResponse.status || response.status,
+                message: jsonResponse.message,
+                data: jsonResponse.data as T
+            };
+        }
+
+        return { status: response.status, data: jsonResponse as T };
     }
 }
 

@@ -46,7 +46,7 @@ export class BasalamService {
                 logo?: string;
                 type?: number;
                 [key: string]: unknown;
-            }>>('/shops');
+            }>>('/shops/');
 
             // Find shop with type = 1 (Basalam shop)
             const basalamShop = shops?.find(shop => shop.type === 1);
