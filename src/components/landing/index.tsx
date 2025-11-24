@@ -1,0 +1,12 @@
+export { Navbar } from "./Navbar";
+export { HeroSection } from "./HeroSection";
+export { TrustSignals } from "./TrustSignals";
+export { ValueProposition } from "./ValueProposition";
+export { PlatformIntegrations } from "./PlatformIntegrations";
+export { PluginShowcase } from "./PluginShowcase";
+export { HowItWorks } from "./HowItWorks";
+export { PricingComparison } from "./PricingComparison";
+export { SocialProof } from "./SocialProof";
+export { FAQ } from "./FAQ";
+export { FinalCTA } from "./FinalCTA";
+export { Footer } from "./Footer";
