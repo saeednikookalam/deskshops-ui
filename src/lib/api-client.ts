@@ -16,18 +16,18 @@ class ApiError extends Error {
 }
 
 class ApiClient {
-    // Helper to normalize endpoints with trailing slash
+    // Helper to normalize endpoints - remove trailing slashes
     private normalizeEndpoint(endpoint: string): string {
-        // If endpoint has query params, DO NOT add trailing slash before ?
-        // API server expects: /path?param=value (NOT /path/?param=value)
+        // FastAPI routes are defined without trailing slash
+        // To prevent 307 redirects, we remove any trailing slashes from frontend
         if (endpoint.includes('?')) {
             const [path, query] = endpoint.split('?');
-            // Remove trailing slash if exists before query params
+            // Remove trailing slash before query params
             const normalizedPath = path.endsWith('/') ? path.slice(0, -1) : path;
             return `${normalizedPath}?${query}`;
         }
-        // For endpoints without query params, add trailing slash
-        return endpoint.endsWith('/') ? endpoint : `${endpoint}/`;
+        // Remove trailing slash if exists
+        return endpoint.endsWith('/') && endpoint !== '/' ? endpoint.slice(0, -1) : endpoint;
     }
 
     private getAuthHeaders(): Record<string, string> {
