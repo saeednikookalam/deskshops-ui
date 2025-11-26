@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/table";
 import Image from "next/image";
 import { Currency } from "@/components/ui/currency";
+import { formatWithPersianComma } from "@/lib/number-utils";
+import { ExportProductsModal } from "@/components/ui/export-products-modal";
 
 interface Shop {
   id: number;
@@ -25,8 +27,8 @@ interface Product {
   id: number;
   sku: string | null;
   title: string;
-  inventory: number;
-  status: "active" | "inactive";
+  stock: number;
+  status: number;
   price: number;
   image: string | null;
   category: string | null;
@@ -44,7 +46,8 @@ export default function ProductsPageContent() {
   const [syncing, setSyncing] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [shopFilter, setShopFilter] = useState<string>("all");
-  const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const pageRef = useRef(1);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
@@ -192,8 +195,8 @@ export default function ProductsPageContent() {
     }
   };
 
-  const getStatusLabel = (status: string): string => {
-    return status === "active" ? "فعال" : "غیرفعال";
+  const getStatusLabel = (status: number): string => {
+    return status === 1 ? "فعال" : "غیرفعال";
   };
 
   const getShopTypeLabel = (type: number): string => {
@@ -211,34 +214,32 @@ export default function ProductsPageContent() {
 
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);
-    setSelectedProducts(new Set());
   };
 
   const handleShopFilterChange = (value: string) => {
     setShopFilter(value);
-    setSelectedProducts(new Set());
   };
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      const allIds = new Set(products.map(p => p.id));
-      setSelectedProducts(allIds);
-    } else {
-      setSelectedProducts(new Set());
+  const handleExportProducts = async (status: string) => {
+    try {
+      setIsExporting(true);
+
+      // TODO: Implement API call for exporting products
+      // For now, just log the status filter
+      console.log("Exporting products with status:", status);
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      showToast.success("فایل Excel محصولات با موفقیت دانلود شد");
+      setIsExportModalOpen(false);
+    } catch (error) {
+      console.error("Error exporting products:", error);
+      showToast.error("خطا در دانلود فایل");
+    } finally {
+      setIsExporting(false);
     }
   };
-
-  const handleSelectProduct = (productId: number, checked: boolean) => {
-    const newSelected = new Set(selectedProducts);
-    if (checked) {
-      newSelected.add(productId);
-    } else {
-      newSelected.delete(productId);
-    }
-    setSelectedProducts(newSelected);
-  };
-
-  const isAllSelected = products.length > 0 && selectedProducts.size === products.length;
 
   if (loading && products.length === 0) {
     return (
@@ -253,6 +254,13 @@ export default function ProductsPageContent() {
 
   return (
     <div className="rounded-[10px] bg-white p-8 shadow-1 dark:bg-gray-dark dark:shadow-card">
+      {/* Page Title */}
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-dark dark:text-white">
+          مدیریت محصولات
+        </h2>
+      </div>
+
       {/* Filters and Actions */}
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         {/* Filters Section */}
@@ -294,19 +302,6 @@ export default function ProductsPageContent() {
 
         {/* Actions Section */}
         <div className="flex flex-wrap items-center gap-3 lg:flex-nowrap">
-          {selectedProducts.size > 0 && (
-            <>
-              <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary whitespace-nowrap">
-                {selectedProducts.size} انتخاب شده
-              </span>
-              <button
-                onClick={() => setSelectedProducts(new Set())}
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-stroke px-4 py-2.5 text-sm font-medium text-dark transition-all hover:bg-gray-2 dark:border-dark-3 dark:text-white dark:hover:bg-dark-2 whitespace-nowrap"
-              >
-                لغو انتخاب
-              </button>
-            </>
-          )}
           <button
             onClick={handleSyncProducts}
             disabled={syncing}
@@ -315,7 +310,7 @@ export default function ProductsPageContent() {
             {syncing ? (
               <>
                 <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></span>
-                در حال ثبت درخواست...
+                در حال ثبت...
               </>
             ) : (
               <>
@@ -332,9 +327,28 @@ export default function ProductsPageContent() {
                     d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                   />
                 </svg>
-                درخواست به‌روزرسانی
+                به‌روزرسانی
               </>
             )}
+          </button>
+          <button
+            onClick={() => setIsExportModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2.5 rounded-lg border border-primary bg-transparent px-6 py-2.5 text-sm font-medium text-primary transition-all hover:bg-primary hover:text-white whitespace-nowrap"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            خروجی Excel
           </button>
         </div>
       </div>
@@ -370,14 +384,6 @@ export default function ProductsPageContent() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px]">
-                  <input
-                    type="checkbox"
-                    checked={isAllSelected}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                    className="h-4 w-4 cursor-pointer rounded border-stroke bg-transparent text-primary focus:ring-2 focus:ring-primary dark:border-dark-3"
-                  />
-                </TableHead>
                 <TableHead className="min-w-[80px]">عکس</TableHead>
                 <TableHead className="min-w-[120px]">SKU</TableHead>
                 <TableHead className="min-w-[200px]">عنوان</TableHead>
@@ -389,14 +395,6 @@ export default function ProductsPageContent() {
             <TableBody>
               {products.map((product) => (
                 <TableRow key={product.id}>
-                  <TableCell className="w-[50px]">
-                    <input
-                      type="checkbox"
-                      checked={selectedProducts.has(product.id)}
-                      onChange={(e) => handleSelectProduct(product.id, e.target.checked)}
-                      className="h-4 w-4 cursor-pointer rounded border-stroke bg-transparent text-primary focus:ring-2 focus:ring-primary dark:border-dark-3"
-                    />
-                  </TableCell>
                   <TableCell className="min-w-[80px]">
                     <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-gray-2 dark:bg-dark-2">
                       {product.image ? (
@@ -445,7 +443,7 @@ export default function ProductsPageContent() {
                   </TableCell>
                   <TableCell>
                     <span className="text-dark dark:text-white">
-                      {product.inventory}
+                      {formatWithPersianComma(product.stock)}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -471,6 +469,14 @@ export default function ProductsPageContent() {
           )}
         </>
       )}
+
+      {/* Export Modal */}
+      <ExportProductsModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={handleExportProducts}
+        isExporting={isExporting}
+      />
     </div>
   );
 }
