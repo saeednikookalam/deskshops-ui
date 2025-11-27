@@ -96,7 +96,7 @@ export function ExportProductsModal({ isOpen, onClose, onExport, isExporting = f
               {/* Description */}
               <div className="mt-2">
                 <p className="text-sm text-body-color dark:text-dark-6">
-                  فایل Excel محصولات با فیلترهای انتخابی دانلود می‌شود
+                  فایل CSV محصولات با فیلترهای انتخابی دانلود می‌شود
                 </p>
               </div>
 

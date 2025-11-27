@@ -73,6 +73,12 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
       return;
     }
 
+    console.log('Starting subscription process...', {
+      pluginName: plugin.name,
+      pluginId: plugin.id,
+      duration
+    });
+
     try {
       // Show loading status
       setPurchaseStatus('loading');
@@ -103,6 +109,7 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
         }
       }
     } catch (error) {
+      console.error('Subscription failed:', error);
       setPurchaseStatus('error');
       const errorMessage = error instanceof Error ? error.message : 'خطا در ارتباط با سرور';
       setStatusMessage(formatMessage(errorMessage));

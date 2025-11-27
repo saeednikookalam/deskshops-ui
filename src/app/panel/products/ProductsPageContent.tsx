@@ -224,18 +224,36 @@ export default function ProductsPageContent() {
     try {
       setIsExporting(true);
 
-      // TODO: Implement API call for exporting products
-      // For now, just log the status filter
-      console.log("Exporting products with status:", status);
+      // ساخت فیلترها برای export
+      const exportFilters: { shop_id?: number; status?: number } = {};
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (shopFilter !== "all") {
+        exportFilters.shop_id = Number(shopFilter);
+      }
 
-      showToast.success("فایل Excel محصولات با موفقیت دانلود شد");
-      setIsExportModalOpen(false);
+      if (status !== "all") {
+        exportFilters.status = status === "active" ? 1 : 0;
+      }
+
+      const response = await apiClient.postWithFullResponse('/plugins/basalam/sync', {
+        entity_type: 3, // 3 = CSV Export
+        filters: Object.keys(exportFilters).length > 0 ? exportFilters : null,
+      });
+
+      const message = response.message || "فایل CSV محصولات با موفقیت دانلود شد";
+
+      if (response.status >= 200 && response.status < 300) {
+        showToast.success(message);
+        setIsExportModalOpen(false);
+      } else if (response.status >= 400 && response.status < 500) {
+        showToast.warning(message);
+      } else {
+        showToast.error(message);
+      }
     } catch (error) {
       console.error("Error exporting products:", error);
-      showToast.error("خطا در دانلود فایل");
+      const errorMessage = error instanceof Error ? error.message : "خطا در دانلود فایل";
+      showToast.error(errorMessage);
     } finally {
       setIsExporting(false);
     }
@@ -348,7 +366,7 @@ export default function ProductsPageContent() {
                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            خروجی Excel
+            خروجی CSV
           </button>
         </div>
       </div>

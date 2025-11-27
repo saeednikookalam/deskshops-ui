@@ -14,7 +14,7 @@ import {
 
 interface SyncEntity {
   id: number;
-  entity_type: number; // 1=Products, 2=Orders
+  entity_type: number; // 1=Products, 2=Orders, 3=Export Products
   total_pages: number | null;
   processed_page: number | null;
   status: number; // 1=Pending, 2=Processing, 3=Completed, 4=Cancelled
@@ -41,6 +41,7 @@ const STATUS_COLORS: Record<number, string> = {
 const ENTITY_TYPE_LABELS: Record<number, string> = {
   1: "محصولات",
   2: "سفارشات",
+  3: "خروجی محصولات",
 };
 
 export default function RequestsPageContent() {
@@ -156,7 +157,7 @@ export default function RequestsPageContent() {
     <div className="rounded-[10px] bg-white p-8 shadow-1 dark:bg-gray-dark dark:shadow-card">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-semibold text-dark dark:text-white">
-          درخواست‌های به‌روزرسانی
+          درخواست‌ها
         </h2>
         <div className="flex items-center gap-2">
           {refreshing && (

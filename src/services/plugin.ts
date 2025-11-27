@@ -127,10 +127,39 @@ class PluginService {
   }
 
   async createSubscription(pluginName: string, planType: 'monthly' | 'yearly'): Promise<void> {
-    await apiClient.post('/api/subscriptions/create', {
-      plugin_name: pluginName,
+    // Validation
+    if (!pluginName || typeof pluginName !== 'string') {
+      throw new Error('نام پلاگین معتبر نیست');
+    }
+
+    if (!planType || (planType !== 'monthly' && planType !== 'yearly')) {
+      throw new Error('نوع پلن معتبر نیست');
+    }
+
+    const payload = {
+      plugin_name: pluginName.trim(),
       plan_type: planType
-    });
+    };
+
+    console.log('Creating subscription with payload:', payload);
+
+    try {
+      const response = await apiClient.post('/api/subscriptions/create', payload);
+      console.log('Subscription created successfully:', response);
+      return response;
+    } catch (error) {
+      console.error('Error creating subscription:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          message: error.message,
+          // @ts-expect-error - checking for status
+          status: error.status,
+          // @ts-expect-error - checking for data
+          data: error.data
+        });
+      }
+      throw error;
+    }
   }
 
   async getPluginsWithSubscriptionStatus(): Promise<PluginListResponse> {
