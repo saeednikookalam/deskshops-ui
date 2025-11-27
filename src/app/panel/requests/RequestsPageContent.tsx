@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { apiClient } from "@/lib/api-client";
 import { showToast } from "@/lib/toast";
+import { getToken } from "@/lib/token-manager";
 import {
   Table,
   TableBody,
@@ -147,14 +148,39 @@ export default function RequestsPageContent() {
     try {
       setDownloadingId(requestId);
 
-      // TODO: API call will be provided later
-      // For now, just show a placeholder message
-      console.log("Downloading file for request:", requestId);
+      // دانلود فایل از API
+      const token = getToken();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/plugins/basalam/exports/${requestId}/download`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
 
-      // Placeholder for API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        showToast.error('خطا در دریافت فایل از سرور');
+        return;
+      }
 
-      showToast.success("دانلود فایل آغاز شد");
+      // دریافت فایل به صورت blob
+      const blob = await response.blob();
+
+      // ساخت URL موقت برای دانلود
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `products-export-${requestId}.csv`;
+      document.body.appendChild(a);
+      a.click();
+
+      // پاکسازی
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      showToast.success("فایل با موفقیت دانلود شد");
     } catch (error) {
       console.error("Error downloading file:", error);
       const errorMessage = error instanceof Error ? error.message : "خطا در دانلود فایل";
