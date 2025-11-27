@@ -30,13 +30,6 @@ export interface PluginListResponse {
   per_page?: number;
 }
 
-export interface PluginStatsResponse {
-  total_plugins: number;
-  active_plugins: number;
-  inactive_plugins: number;
-  total_subscriptions: number;
-}
-
 interface ApiPluginResponse {
   id?: number;
   name: string;
@@ -100,35 +93,13 @@ class PluginService {
     };
   }
 
-  async getPluginDetails(pluginName: string): Promise<Plugin> {
-    const plugin = await apiClient.get<ApiPluginResponse>(`/api/plugins/${encodeURIComponent(pluginName)}`);
-
-    return {
-      id: plugin.id,
-      name: plugin.name,
-      display_name: plugin.display_name || plugin.name,
-      description: plugin.description,
-      version: plugin.version,
-      author: plugin.author,
-      status: plugin.is_active ? 'active' : 'inactive',
-      is_active: plugin.is_active,
-      user_count: plugin.total_installations || 0,
-      created_at: plugin.created_at,
-      updated_at: plugin.updated_at,
-    };
-  }
-
-  async getPluginStats(): Promise<PluginStatsResponse> {
-    return await apiClient.get<PluginStatsResponse>('/api/plugins/stats');
-  }
-
   async getUserSubscriptions(): Promise<{ plugin_ids: number[] }> {
     return await apiClient.get<{ plugin_ids: number[] }>('/api/subscriptions/my-subscriptions');
   }
 
   async createSubscription(pluginName: string, planType: 'monthly' | 'yearly'): Promise<void> {
     // Validation
-    if (!pluginName || typeof pluginName !== 'string') {
+    if (!pluginName) {
       throw new Error('نام پلاگین معتبر نیست');
     }
 
@@ -144,9 +115,8 @@ class PluginService {
     console.log('Creating subscription with payload:', payload);
 
     try {
-      const response = await apiClient.post('/api/subscriptions/create', payload);
-      console.log('Subscription created successfully:', response);
-      return response;
+      await apiClient.post('/api/subscriptions/create', payload);
+      console.log('Subscription created successfully');
     } catch (error) {
       console.error('Error creating subscription:', error);
       if (error instanceof Error) {

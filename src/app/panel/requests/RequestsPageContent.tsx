@@ -52,6 +52,7 @@ export default function RequestsPageContent() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const initialLoadDone = useRef(false);
 
   const loadRequests = useCallback(async (pageNum: number, append = false, isRefresh = false) => {
@@ -140,6 +141,31 @@ export default function RequestsPageContent() {
 
   const canCancel = (status: number): boolean => {
     return status === 1 || status === 2; // Pending or Processing
+  };
+
+  const handleDownload = async (requestId: number) => {
+    try {
+      setDownloadingId(requestId);
+
+      // TODO: API call will be provided later
+      // For now, just show a placeholder message
+      console.log("Downloading file for request:", requestId);
+
+      // Placeholder for API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      showToast.success("دانلود فایل آغاز شد");
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      const errorMessage = error instanceof Error ? error.message : "خطا در دانلود فایل";
+      showToast.error(errorMessage);
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const canDownload = (request: SyncEntity): boolean => {
+    return request.entity_type === 3 && request.status === 3; // Export Products & Completed
   };
 
   if (loading && requests.length === 0) {
@@ -263,15 +289,52 @@ export default function RequestsPageContent() {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    {canCancel(request.status) && (
-                      <button
-                        onClick={() => handleCancel(request.id)}
-                        disabled={cancellingId === request.id}
-                        className="rounded-lg border border-red-500 px-4 py-2 text-sm font-medium text-red-500 transition-all hover:bg-red-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {cancellingId === request.id ? "در حال لغو..." : "لغو"}
-                      </button>
-                    )}
+                    <div className="flex items-center justify-end gap-2">
+                      {canCancel(request.status) && (
+                        <button
+                          onClick={() => handleCancel(request.id)}
+                          disabled={cancellingId === request.id}
+                          className="rounded-lg border border-red-500 px-4 py-2 text-sm font-medium text-red-500 transition-all hover:bg-red-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {cancellingId === request.id ? "در حال لغو..." : "لغو"}
+                        </button>
+                      )}
+                      {canDownload(request) && (
+                        <button
+                          onClick={() => handleDownload(request.id)}
+                          disabled={downloadingId === request.id}
+                          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-all hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="دانلود فایل CSV"
+                        >
+                          {downloadingId === request.id ? (
+                            <>
+                              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></span>
+                              در حال دانلود...
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                className="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                />
+                              </svg>
+                              دانلود
+                            </>
+                          )}
+                        </button>
+                      )}
+                      {!canCancel(request.status) && !canDownload(request) && (
+                        <span className="text-sm text-body-color dark:text-dark-6">-</span>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
