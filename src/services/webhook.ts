@@ -22,6 +22,13 @@ export class WebhookService {
         try {
             const data = await apiClient.get<WebhookApiResponse>('/plugins/webhook/');
 
+            // اگر data وجود نداشته باشد، webhook فعال نیست
+            if (!data) {
+                return {
+                    isActive: false
+                };
+            }
+
             return {
                 isActive: data.is_active,
                 apiRoute: data.url,
@@ -43,6 +50,13 @@ export class WebhookService {
     async activateWebhook(): Promise<{ success: boolean; apiRoute?: string; apiSecretKey?: string; message?: string }> {
         try {
             const data = await apiClient.post<WebhookApiResponse>('/plugins/webhook/activate');
+
+            if (!data) {
+                return {
+                    success: false,
+                    message: 'پاسخ نامعتبر از سرور'
+                };
+            }
 
             return {
                 success: data.is_active,
