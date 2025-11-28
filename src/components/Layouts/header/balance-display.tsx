@@ -1,30 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { paymentsService } from "@/services/payments";
 import { Currency } from "@/components/ui/currency";
 import Link from "next/link";
+import { useUser } from "@/contexts/user-context";
 
 export function BalanceDisplay() {
-  const [balance, setBalance] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const fetchBalance = async () => {
-      try {
-        const data = await paymentsService.getBalance();
-        setBalance(data.balance);
-      } catch (error) {
-        console.error("Error fetching balance:", error);
-        setError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchBalance();
-  }, []);
+  const { balance, isLoading } = useUser();
 
   if (isLoading) {
     return (
@@ -32,30 +13,6 @@ export function BalanceDisplay() {
         <div className="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
         <span className="text-sm text-gray-500 dark:text-gray-400">در حال بارگذاری...</span>
       </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Link
-        href="/panel/financial"
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-gray-dark border border-stroke dark:border-dark-3 hover:border-red transition-colors"
-      >
-        <svg
-          className="w-5 h-5 text-red"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-          />
-        </svg>
-        <span className="text-sm text-red">خطا</span>
-      </Link>
     );
   }
 
