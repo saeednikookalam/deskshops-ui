@@ -20,7 +20,7 @@ export default function WebhookPage() {
     if (!webhookStatus?.apiRoute) return null;
 
     // آدرس ثابت webhook
-    const baseUrl = 'https://api.desksops.ir/webhook';
+    const baseUrl = 'https://api.desksops.ir/plugins/webhook';
 
     // اگر apiRoute شامل /webhook/ هست، فقط url_hash رو استخراج کن
     const urlHash = webhookStatus.apiRoute.includes('/webhook/')
