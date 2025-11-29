@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { apiClient } from "@/lib/api-client";
 import { showToast } from "@/lib/toast";
-import { getToken } from "@/lib/token-manager";
 import {
   Table,
   TableBody,
@@ -23,6 +22,10 @@ interface SyncEntity {
   processed_at: string | null;
   created_at: string | null;
   updated_at: string | null;
+}
+
+interface DownloadResponse {
+  download_url: string;
 }
 
 const STATUS_LABELS: Record<number, string> = {
@@ -148,39 +151,20 @@ export default function RequestsPageContent() {
     try {
       setDownloadingId(requestId);
 
-      // دانلود فایل از API
-      const token = getToken();
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/plugins/basalam/exports/${requestId}/download`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        }
+      // دریافت URL دانلود از API
+      const response = await apiClient.get<DownloadResponse>(
+        `/plugins/basalam/exports/${requestId}/download`
       );
 
-      if (!response.ok) {
-        showToast.error('خطا در دریافت فایل از سرور');
+      if (!response?.download_url) {
+        showToast.error('لینک دانلود یافت نشد');
         return;
       }
 
-      // دریافت فایل به صورت blob
-      const blob = await response.blob();
+      // باز کردن URL در تب جدید
+      window.open(response.download_url, '_blank');
 
-      // ساخت URL موقت برای دانلود
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `products-export-${requestId}.csv`;
-      document.body.appendChild(a);
-      a.click();
-
-      // پاکسازی
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
-      showToast.success("فایل با موفقیت دانلود شد");
+      showToast.success("فایل در حال دانلود است");
     } catch (error) {
       console.error("Error downloading file:", error);
       const errorMessage = error instanceof Error ? error.message : "خطا در دانلود فایل";
