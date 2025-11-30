@@ -144,7 +144,7 @@ export default function RequestsPageContent() {
   };
 
   const canCancel = (status: number): boolean => {
-    return status === 1 || status === 2; // Pending or Processing
+    return status === 1; // Pending or Processing
   };
 
   const handleDownload = async (requestId: number) => {
