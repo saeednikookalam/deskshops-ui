@@ -33,6 +33,7 @@ const STATUS_LABELS: Record<number, string> = {
   2: "در حال پردازش",
   3: "تکمیل شده",
   4: "لغو شده",
+  5: "آماده دانلود",
 };
 
 const STATUS_COLORS: Record<number, string> = {
@@ -40,6 +41,7 @@ const STATUS_COLORS: Record<number, string> = {
   2: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
   3: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
   4: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+  5: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
 };
 
 const ENTITY_TYPE_LABELS: Record<number, string> = {
@@ -175,7 +177,7 @@ export default function RequestsPageContent() {
   };
 
   const canDownload = (request: SyncEntity): boolean => {
-    return request.entity_type === 3 && request.status === 3; // Export Products & Completed
+    return request.entity_type === 3 && request.status === 5; // Export Products & Ready to Download
   };
 
   if (loading && requests.length === 0) {
