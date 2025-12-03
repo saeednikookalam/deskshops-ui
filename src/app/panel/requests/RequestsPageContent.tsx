@@ -177,7 +177,7 @@ export default function RequestsPageContent() {
   };
 
   const canDownload = (request: SyncEntity): boolean => {
-    return request.entity_type === 3 && request.status === 5; // Export Products & Ready to Download
+    return request.entity_type === 3 && request.status === 3; // Export Products & Completed
   };
 
   if (loading && requests.length === 0) {
