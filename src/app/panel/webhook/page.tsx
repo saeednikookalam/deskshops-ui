@@ -567,29 +567,47 @@ X-API-Key: ${webhookStatus.apiSecretKey || 'YOUR_API_KEY'}`}
   "products": [
     {
       "shop_product_id": "prod_001",
-      "sku": "SKU-12345",
-      "title": "نام محصول",
       "price": "1500000",
       "primary_price": "1800000",
       "stock": "10",
       "status": "active",
-      "description": "توضیحات محصول"
+      "preparation_days": "3"
     }
   ]
 }`}
                       />
                     </div>
 
+                    {/* Validation Rules */}
+                    <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4 dark:border-blue-500/30 dark:bg-blue-500/10">
+                      <div className="flex gap-3">
+                        <svg className="h-5 w-5 text-blue-600 dark:text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div className="text-sm text-blue-600 dark:text-blue-500">
+                          <p className="font-semibold mb-2">قوانین اعتبارسنجی:</p>
+                          <ul className="list-disc list-inside space-y-1">
+                            <li><strong>shop_product_id</strong> الزامی است (شناسه یکتای محصول در سیستم شما)</li>
+                            <li><strong>حداقل یکی</strong> از فیلدهای دیگر (status, stock, price, primary_price, preparation_days) باید ارسال شود</li>
+                            <li>فیلدهای عددی (stock, price, primary_price, preparation_days) باید عدد باشند و نمی‌توانند منفی باشند</li>
+                            <li>status فقط می‌تواند &quot;active&quot; یا &quot;inactive&quot; باشد</li>
+                            <li>فیلدهای خالی یا null نادیده گرفته می‌شوند</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Fields Table */}
                     <div className="rounded-lg border border-stroke dark:border-dark-3 overflow-hidden">
                       <div className="bg-gray-2 dark:bg-dark-2 px-4 py-2 border-b border-stroke dark:border-dark-3">
-                        <p className="text-sm font-medium text-dark dark:text-white">فیلدهای الزامی</p>
+                        <p className="text-sm font-medium text-dark dark:text-white">فیلدهای قابل ارسال</p>
                       </div>
                       <div className="p-4">
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b border-stroke dark:border-dark-3">
                               <th className="text-right py-2 text-dark dark:text-white">فیلد</th>
+                              <th className="text-right py-2 text-dark dark:text-white">الزامی</th>
                               <th className="text-right py-2 text-dark dark:text-white">نوع</th>
                               <th className="text-right py-2 text-dark dark:text-white">توضیحات</th>
                             </tr>
@@ -597,53 +615,51 @@ X-API-Key: ${webhookStatus.apiSecretKey || 'YOUR_API_KEY'}`}
                           <tbody className="text-body-color dark:text-dark-6">
                             <tr className="border-b border-stroke dark:border-dark-3">
                               <td dir="ltr" className="py-2 font-mono text-primary text-right">event_type</td>
+                              <td className="py-2 text-right"><span className="text-red-500">✓</span></td>
                               <td className="py-2 text-right">string</td>
-                              <td className="py-2 text-right">فعلاً فقط &#34;product&#34;</td>
+                              <td className="py-2 text-right">فعلاً فقط &quot;product&quot;</td>
                             </tr>
                             <tr className="border-b border-stroke dark:border-dark-3">
                               <td dir="ltr" className="py-2 font-mono text-primary text-right">shop_id</td>
+                              <td className="py-2 text-right"><span className="text-red-500">✓</span></td>
                               <td className="py-2 text-right">integer</td>
                               <td className="py-2 text-right">شناسه فروشگاه شما</td>
                             </tr>
                             <tr className="border-b border-stroke dark:border-dark-3">
                               <td dir="ltr" className="py-2 font-mono text-primary text-right">shop_product_id</td>
+                              <td className="py-2 text-right"><span className="text-red-500">✓</span></td>
                               <td className="py-2 text-right">string</td>
-                              <td className="py-2 text-right">شناسه یکتا محصول در سیستم شما</td>
-                            </tr>
-                            <tr className="border-b border-stroke dark:border-dark-3">
-                              <td dir="ltr" className="py-2 font-mono text-primary text-right">sku</td>
-                              <td className="py-2 text-right">string</td>
-                              <td className="py-2 text-right">کد محصول</td>
-                            </tr>
-                            <tr className="border-b border-stroke dark:border-dark-3">
-                              <td dir="ltr" className="py-2 font-mono text-primary text-right">title</td>
-                              <td className="py-2 text-right">string</td>
-                              <td className="py-2 text-right">عنوان محصول</td>
+                              <td className="py-2 text-right">شناسه یکتای محصول</td>
                             </tr>
                             <tr className="border-b border-stroke dark:border-dark-3">
                               <td dir="ltr" className="py-2 font-mono text-primary text-right">price</td>
+                              <td className="py-2 text-right">-</td>
                               <td className="py-2 text-right">string</td>
-                              <td className="py-2 text-right">قیمت فروش (تومان)</td>
+                              <td className="py-2 text-right">قیمت فروش (عدد، تومان)</td>
                             </tr>
                             <tr className="border-b border-stroke dark:border-dark-3">
                               <td dir="ltr" className="py-2 font-mono text-primary text-right">primary_price</td>
+                              <td className="py-2 text-right">-</td>
                               <td className="py-2 text-right">string</td>
-                              <td className="py-2 text-right">قیمت قبل از تخفیف (اختیاری)</td>
+                              <td className="py-2 text-right">قیمت قبل از تخفیف (عدد، تومان)</td>
                             </tr>
                             <tr className="border-b border-stroke dark:border-dark-3">
                               <td dir="ltr" className="py-2 font-mono text-primary text-right">stock</td>
+                              <td className="py-2 text-right">-</td>
                               <td className="py-2 text-right">string</td>
-                              <td className="py-2 text-right">موجودی انبار</td>
+                              <td className="py-2 text-right">موجودی انبار (عدد)</td>
                             </tr>
                             <tr className="border-b border-stroke dark:border-dark-3">
                               <td dir="ltr" className="py-2 font-mono text-primary text-right">status</td>
+                              <td className="py-2 text-right">-</td>
                               <td className="py-2 text-right">string</td>
                               <td className="py-2 text-right">&quot;active&quot; یا &quot;inactive&quot;</td>
                             </tr>
                             <tr>
-                              <td dir="ltr" className="py-2 font-mono text-primary text-right">description</td>
+                              <td dir="ltr" className="py-2 font-mono text-primary text-right">preparation_days</td>
+                              <td className="py-2 text-right">-</td>
                               <td className="py-2 text-right">string</td>
-                              <td className="py-2 text-right">توضیحات محصول</td>
+                              <td className="py-2 text-right">مدت آماده‌سازی (عدد، روز)</td>
                             </tr>
                           </tbody>
                         </table>
@@ -687,8 +703,7 @@ X-API-Key: ${webhookStatus.apiSecretKey || 'YOUR_API_KEY'}`}
       {
         "index": 2,
         "shop_product_id": "prod_003",
-        "sku": "SKU-003",
-        "error": "Missing required field: title"
+        "error": "At least one of these fields must be present: status, stock, primary_price, price, preparation_days"
       }
     ]
   }
@@ -713,13 +728,11 @@ X-API-Key: ${webhookStatus.apiSecretKey || 'YOUR_API_KEY'}`}
     "products": [
       {
         "shop_product_id": "prod_001",
-        "sku": "SKU-12345",
-        "title": "محصول تستی",
         "price": "1500000",
-        "primary_price": "",
+        "primary_price": "1800000",
         "stock": "10",
         "status": "active",
-        "description": "این یک محصول تستی است"
+        "preparation_days": "3"
       }
     ]
   }'`}
@@ -854,10 +867,10 @@ X-API-Key: ${webhookStatus.apiSecretKey || 'YOUR_API_KEY'}`}
                           <strong className="text-dark dark:text-white">راه حل:</strong>
                         </p>
                         <ul className="list-disc list-inside text-sm text-body-color dark:text-dark-6 mr-4">
-                          <li>بررسی کنید تمام فیلدهای الزامی ارسال شده باشند</li>
-                          <li>نوع داده‌ها صحیح باشد (price, stock به صورت string)</li>
+                          <li>shop_product_id حتماً ارسال شود</li>
+                          <li>حداقل یکی از فیلدهای دیگر (status, stock, price, primary_price, preparation_days) ارسال شود</li>
+                          <li>فیلدهای عددی (price, stock, primary_price, preparation_days) باید عدد باشند و منفی نباشند</li>
                           <li>status فقط &quot;active&quot; یا &quot;inactive&quot; باشد</li>
-                          <li>shop_product_id یکتا و تکراری نباشد</li>
                         </ul>
                       </div>
                     </div>
