@@ -11,7 +11,7 @@ import { hasToken } from "@/lib/token-manager";
 
 const enamadBadgeMarkup = `
   <a referrerpolicy="origin" target="_blank" href="https://trustseal.enamad.ir/?id=662692&Code=kwnqf3BAnm7MUO1IZM6ZbM7GdFaFeF8C" rel="noreferrer">
-    <img referrerpolicy="origin" src="https://trustseal.enamad.ir/logo.aspx?id=662692&Code=kwnqf3BAnm7MUO1IZM6ZbM7GdFaFeF8C" alt="" style="cursor:pointer" code="kwnqf3BAnm7MUO1IZM6ZbM7GdFaFeF8C" />
+    <img referrerpolicy="origin" src="https://trustseal.enamad.ir/logo.aspx?id=662692&Code=kwnqf3BAnm7MUO1IZM6ZbM7GdFaFeF8C" alt="" style="cursor:pointer" data-code="kwnqf3BAnm7MUO1IZM6ZbM7GdFaFeF8C" />
   </a>
 `;
 
@@ -45,7 +45,8 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error("Error sending OTP:", err);
-      setError("خطا در ارتباط با سرور");
+      const errorMessage = err instanceof Error ? err.message : "خطا در ارسال کد تأیید";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -66,7 +67,8 @@ export default function LoginPage() {
       window.location.href = "/panel";
     } catch (err) {
       console.error("Error verifying OTP:", err);
-      setError("کد تأیید نادرست است");
+      const errorMessage = err instanceof Error ? err.message : "کد تأیید نادرست است";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -87,7 +89,8 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error("Error resending OTP:", err);
-      setError("خطا در ارتباط با سرور");
+      const errorMessage = err instanceof Error ? err.message : "خطا در ارسال مجدد کد";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

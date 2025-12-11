@@ -44,6 +44,7 @@ export function PluginCard({
                            }: PropsType) {
     const [imageError, setImageError] = useState(false);
 
+    
     const truncateDescription = (text: string, maxLength: number = 150) => {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
@@ -78,8 +79,8 @@ export function PluginCard({
                             />
                         </div>
                     ) : (
-                        <div className="text-primary">
-                            <Icon className="w-8 h-8"/>
+                        <div className="flex items-center justify-center">
+                            <Icon className="w-8 h-8 flex-shrink-0"/>
                         </div>
                     )}
                 </div>

@@ -86,7 +86,8 @@ export default function RequestsPageContent() {
     } catch (error) {
       console.error("Error loading requests:", error);
       if (!isRefresh) {
-        showToast.error("خطا در بارگذاری درخواست‌ها");
+        const errorMessage = error instanceof Error ? error.message : "خطا در بارگذاری درخواست‌ها";
+        showToast.error(errorMessage);
       }
     } finally {
       setLoading(false);

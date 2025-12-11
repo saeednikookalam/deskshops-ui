@@ -61,7 +61,8 @@ export default function BasalamPageContent() {
       }
     } catch (error) {
       console.error("Error loading settings:", error);
-      showToast.error("خطا در بارگذاری تنظیمات");
+      const errorMessage = error instanceof Error ? error.message : "خطا در بارگذاری تنظیمات";
+      showToast.error(errorMessage);
     } finally {
       setLoadingSettings(false);
     }
@@ -139,7 +140,7 @@ export default function BasalamPageContent() {
     );
 
     try {
-      await apiClient.put<{ success: boolean; message: string; setting: Setting }>(
+      const response = await apiClient.putWithFullResponse<{ success: boolean; message: string; setting: Setting }>(
         '/plugins/basalam/settings',
         {
           setting_id: settingId,
@@ -147,11 +148,13 @@ export default function BasalamPageContent() {
         }
       );
 
-      showToast.success(`${title} ${newStatus ? "فعال" : "غیرفعال"} شد`);
+      const message = response.message || `${title} ${newStatus ? "فعال" : "غیرفعال"} شد`;
+      showToast.success(message);
     } catch (error) {
       // Revert on error
       setSettings(previousSettings);
-      showToast.error(`خطا در تغییر ${title}`);
+      const errorMessage = error instanceof Error ? error.message : `خطا در تغییر ${title}`;
+      showToast.error(errorMessage);
       console.error("Error updating setting:", error);
     }
   };

@@ -99,7 +99,8 @@ export default function ProductsPageContent() {
       }
     } catch (error) {
       console.error("Error loading products:", error);
-      showToast.error("خطا در بارگذاری محصولات");
+      const errorMessage = error instanceof Error ? error.message : "خطا در بارگذاری محصولات";
+      showToast.error(errorMessage);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -117,7 +118,8 @@ export default function ProductsPageContent() {
         }
       } catch (error) {
         console.error("Error loading shops:", error);
-        showToast.error("خطا در بارگذاری فروشگاه‌ها");
+        const errorMessage = error instanceof Error ? error.message : "خطا در بارگذاری فروشگاه‌ها";
+        showToast.error(errorMessage);
       } finally {
         setLoadingShops(false);
       }

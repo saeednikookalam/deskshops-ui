@@ -10,17 +10,15 @@ export interface Plugin {
   status?: 'active' | 'inactive' | 'disabled';
   is_active?: boolean;
   user_count?: number;
-  monthly_price?: string;
-  yearly_price?: string;
+  monthly_price?: string | null;
+  yearly_price?: string | null;
   logo_url?: string;
   has_subscription?: boolean;
   created_at?: string;
   updated_at?: string;
-  // Menu related fields
-  menu_title?: string;
-  menu_icon?: string;
-  menu_path?: string;
-  menu_order?: number;
+  // Additional fields from API
+  route_prefix?: string;
+  total_installations?: number;
 }
 
 export interface PluginListResponse {
@@ -45,24 +43,16 @@ interface ApiPluginResponse {
   has_subscription?: boolean;
   created_at?: string;
   updated_at?: string;
-  // Menu fields from API
-  menu_title?: string;
-  menu_icon?: string;
-  menu_path?: string;
-  menu_order?: number;
+  route_prefix?: string;
 }
 
-interface ApiPluginListResponse {
-  plugins?: ApiPluginResponse[];
-  total_count?: number;
-}
 
 class PluginService {
   async getPluginsList(page: number = 1, perPage: number = 20): Promise<PluginListResponse> {
-    const response = await apiClient.get<ApiPluginListResponse>(`/api/plugins/list?page=${page}&per_page=${perPage}`);
+    const response = await apiClient.getWithMeta<ApiPluginResponse[]>(`/api/plugins/list?page=${page}&per_page=${perPage}`);
 
     // Transform API response to match our interface
-    const plugins: Plugin[] = response.plugins ? response.plugins.map((plugin: ApiPluginResponse) => ({
+    const plugins: Plugin[] = response.data ? response.data.map((plugin: ApiPluginResponse) => ({
       id: plugin.id,
       name: plugin.name,
       display_name: plugin.display_name || plugin.name,
@@ -78,23 +68,27 @@ class PluginService {
       has_subscription: plugin.has_subscription || false,
       created_at: plugin.created_at,
       updated_at: plugin.updated_at,
-      // Menu fields
-      menu_title: plugin.menu_title,
-      menu_icon: plugin.menu_icon,
-      menu_path: plugin.menu_path,
-      menu_order: plugin.menu_order,
+      route_prefix: plugin.route_prefix,
     })) : [];
 
     return {
       plugins,
-      total: response.total_count || plugins.length,
+      total: (response.meta?.total as number) || plugins.length,
       page: page,
       per_page: perPage,
     };
   }
 
   async getUserSubscriptions(): Promise<{ plugin_ids: number[] }> {
-    return await apiClient.get<{ plugin_ids: number[] }>('/api/subscriptions/my-subscriptions');
+    // apiClient.get returns the data directly, so response is the array of subscriptions
+    const response = await apiClient.get<Array<{ plugin_id: number }>>('/api/subscriptions/my-subscriptions');
+
+    // response is already the array of subscriptions
+    const pluginIds = Array.isArray(response)
+      ? response.map((sub: { plugin_id?: number }) => sub.plugin_id).filter((id): id is number => Boolean(id))
+      : [];
+
+    return { plugin_ids: pluginIds };
   }
 
   async createSubscription(pluginName: string, planType: 'monthly' | 'yearly'): Promise<void> {
@@ -115,8 +109,8 @@ class PluginService {
     console.log('Creating subscription with payload:', payload);
 
     try {
-      await apiClient.post('/api/subscriptions/create', payload);
-      console.log('Subscription created successfully');
+      const response = await apiClient.postWithFullResponse('/api/subscriptions/create', payload);
+      console.log('Subscription created successfully:', response.message);
     } catch (error) {
       console.error('Error creating subscription:', error);
       if (error instanceof Error) {

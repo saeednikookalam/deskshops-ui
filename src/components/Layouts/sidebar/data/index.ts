@@ -78,12 +78,28 @@ export function generateNavData(
   // Create plugin menu items (excluding basalam)
   const pluginMenuItems: NavItem[] = pluginMenus
     .filter((plugin) => plugin.name !== 'basalam' && !plugin.path.includes('/basalam'))
-    .map((plugin) => ({
-      title: plugin.title,
-      icon: Icons.PieChart,
-      url: plugin.path,
-      items: [],
-    }));
+    .map((plugin) => {
+      let icon;
+
+      // Custom icons for specific plugins
+      switch (plugin.name) {
+        case 'file_importer':
+          icon = Icons.FileImporterIcon;
+          break;
+        case 'webhook':
+          icon = Icons.WebhookIcon;
+          break;
+        default:
+          icon = Icons.PieChart;
+      }
+
+      return {
+        title: plugin.title,
+        icon: icon,
+        url: plugin.path,
+        items: [],
+      };
+    });
 
   // If basalam plugin exists, create simple menu item without sub-items
   if (basalamPlugin) {

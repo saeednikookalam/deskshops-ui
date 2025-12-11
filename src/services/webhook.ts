@@ -36,9 +36,9 @@ export class WebhookService {
             };
         } catch (error) {
             console.error('Error fetching webhook status:', error);
-            return {
-                isActive: false
-            };
+            // پیام خطا رو از API بگیر اگه وجود داشت
+            const errorMessage = error instanceof Error && error.message ? error.message : 'خطا در دریافت وضعیت webhook';
+            throw new Error(errorMessage);
         }
     }
 
@@ -49,25 +49,27 @@ export class WebhookService {
      */
     async activateWebhook(): Promise<{ success: boolean; apiRoute?: string; apiSecretKey?: string; message?: string }> {
         try {
-            const data = await apiClient.post<WebhookApiResponse>('/plugins/webhook/activate');
+            const data = await apiClient.postWithFullResponse<WebhookApiResponse>('/plugins/webhook/activate');
 
-            if (!data) {
+            if (!data.data) {
                 return {
                     success: false,
-                    message: 'پاسخ نامعتبر از سرور'
+                    message: data.message || 'پاسخ نامعتبر از سرور'
                 };
             }
 
             return {
-                success: data.is_active,
-                apiRoute: data.url,
-                apiSecretKey: data.api_key || undefined
+                success: data.data.is_active,
+                apiRoute: data.data.url,
+                apiSecretKey: data.data.api_key || undefined,
+                message: data.message
             };
         } catch (error) {
             console.error('Error activating webhook:', error);
+            const errorMessage = error instanceof Error && error.message ? error.message : 'خطا در فعال‌سازی webhook';
             return {
                 success: false,
-                message: 'خطا در فعال‌سازی webhook'
+                message: errorMessage
             };
         }
     }
@@ -79,15 +81,17 @@ export class WebhookService {
      */
     async deactivateWebhook(): Promise<{ success: boolean; message?: string }> {
         try {
-            await apiClient.post('/plugins/webhook/deactivate');
+            const response = await apiClient.postWithFullResponse('/plugins/webhook/deactivate');
             return {
-                success: true
+                success: true,
+                message: response.message || 'webhook با موفقیت غیرفعال شد'
             };
         } catch (error) {
             console.error('Error deactivating webhook:', error);
+            const errorMessage = error instanceof Error && error.message ? error.message : 'خطا در غیرفعال‌سازی webhook';
             return {
                 success: false,
-                message: 'خطا در غیرفعال‌سازی webhook'
+                message: errorMessage
             };
         }
     }

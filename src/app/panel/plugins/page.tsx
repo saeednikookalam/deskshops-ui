@@ -6,6 +6,9 @@ import { CustomPluginRequestModal } from "@/components/ui/custom-plugin-request-
 import { pluginService, type Plugin } from "@/services/plugin";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useRef } from "react";
+import { SVGProps } from "react";
+
+type IconProps = SVGProps<SVGSVGElement>;
 
 export default function PluginsPage() {
   const router = useRouter();
@@ -131,6 +134,97 @@ export default function PluginsPage() {
     router.push(`/panel/plugins/${plugin.id}`);
   };
 
+  // Custom icons for specific plugins - imported from sidebar icons
+  const FileImporterIcon = (props: IconProps) => (
+    <svg
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+    </svg>
+  );
+
+  const WebhookIcon = (props: IconProps) => (
+    <svg
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+      <circle cx="18" cy="6" r="2" fill="currentColor" />
+      <circle cx="6" cy="18" r="2" fill="currentColor" />
+      <circle cx="18" cy="18" r="2" fill="currentColor" />
+    </svg>
+  );
+
+  const WooCommerceIcon = (props: IconProps) => (
+    <svg
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 7l3 5-3 5-3-5 3-5z" fill="currentColor"/>
+      <path d="M9 12l3-3 3 3-3 3-3-3z" fill="currentColor"/>
+    </svg>
+  );
+
+  const GoogleSheetIcon = (props: IconProps) => (
+    <svg
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/>
+      <polyline points="14,2 14,8 20,8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>
+  );
+
+  const getPluginIcon = (pluginName: string) => {
+    switch (pluginName) {
+      case 'file_importer':
+      case 'file-importer':
+        return FileImporterIcon;
+      case 'webhook':
+        return WebhookIcon;
+      case 'woocommerce':
+        return WooCommerceIcon;
+      case 'google sheet':
+      case 'google_sheet':
+      case 'google-sheet':
+        return GoogleSheetIcon;
+      default:
+        return undefined; // Will use default icon
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -201,7 +295,9 @@ export default function PluginsPage() {
             {/* Custom Plugin Request Card - Always First */}
             <CustomPluginRequestCard onClick={() => setIsRequestModalOpen(true)} />
 
-            {plugins.map((plugin) => (
+            {plugins.map((plugin) => {
+              const CustomIcon = getPluginIcon(plugin.name);
+              return (
               <PluginCard
                 key={plugin.id || plugin.name}
                 name={plugin.display_name || plugin.name}
@@ -212,10 +308,12 @@ export default function PluginsPage() {
                 monthlyPrice={plugin.monthly_price}
                 yearlyPrice={plugin.yearly_price}
                 hasSubscription={plugin.has_subscription}
-                logoUrl={plugin.logo_url}
+                logoUrl={CustomIcon ? undefined : plugin.logo_url}
+                icon={CustomIcon}
                 onCardClick={() => handleCardClick(plugin)}
               />
-            ))}
+              );
+            })}
           </div>
 
           {/* Infinite scroll trigger */}

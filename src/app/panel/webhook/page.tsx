@@ -135,6 +135,8 @@ export default function WebhookPage() {
       setWebhookStatus(status);
     } catch (error) {
       console.error("Error checking webhook status:", error);
+      const errorMessage = error instanceof Error ? error.message : "خطا در بررسی وضعیت webhook";
+      showToast.error(errorMessage);
       setWebhookStatus({ isActive: false });
     } finally {
       setLoading(false);
@@ -204,7 +206,8 @@ export default function WebhookPage() {
       }
     } catch (error) {
       console.error("Error activating webhook:", error);
-      showToast.error("خطا در فعال‌سازی webhook");
+      const errorMessage = error instanceof Error ? error.message : "خطا در فعال‌سازی webhook";
+      showToast.error(errorMessage);
     }
   };
 
@@ -221,7 +224,8 @@ export default function WebhookPage() {
       }
     } catch (error) {
       console.error("Error deactivating webhook:", error);
-      showToast.error("خطا در غیرفعال‌سازی webhook");
+      const errorMessage = error instanceof Error ? error.message : "خطا در غیرفعال‌سازی webhook";
+      showToast.error(errorMessage);
     }
   };
 
