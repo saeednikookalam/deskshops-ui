@@ -19,6 +19,11 @@ export interface Plugin {
   // Additional fields from API
   route_prefix?: string;
   total_installations?: number;
+  // Menu fields for plugin menu manager
+  menu_title?: string;
+  menu_icon?: string;
+  menu_path?: string;
+  menu_order?: number;
 }
 
 export interface PluginListResponse {

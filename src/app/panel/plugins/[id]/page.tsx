@@ -323,7 +323,10 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
             <div className="flex items-start gap-4 mb-6 pb-6 border-b border-stroke dark:border-dark-3">
               <div className="flex-shrink-0">
                 {plugin?.name && getPluginIcon(plugin.name) ? (
-                  getPluginIcon(plugin.name)({ className: "h-16 w-16" })
+                  (() => {
+                    const Icon = getPluginIcon(plugin.name);
+                    return Icon ? <Icon className="h-16 w-16" /> : null;
+                  })()
                 ) : (
                   <div className="h-16 w-16 bg-primary rounded-lg flex items-center justify-center text-white">
                     <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">

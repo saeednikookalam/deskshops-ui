@@ -305,8 +305,8 @@ export default function PluginsPage() {
                 status={plugin.status || 'inactive'}
                 userCount={plugin.user_count}
                 version={plugin.version}
-                monthlyPrice={plugin.monthly_price}
-                yearlyPrice={plugin.yearly_price}
+                monthlyPrice={plugin.monthly_price || undefined}
+                yearlyPrice={plugin.yearly_price || undefined}
                 hasSubscription={plugin.has_subscription}
                 logoUrl={CustomIcon ? undefined : plugin.logo_url}
                 icon={CustomIcon}

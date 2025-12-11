@@ -305,6 +305,56 @@ class ApiClient {
 
         return { status: response.status, data: jsonResponse as T };
     }
+
+    async putWithFullResponse<T = unknown>(endpoint: string, body?: unknown): Promise<{ status: number; message?: string; data?: T }> {
+        const headers = this.getAuthHeaders();
+        const normalizedEndpoint = this.normalizeEndpoint(endpoint);
+
+        let response: Response;
+        try {
+            response = await fetch(`${API_BASE_URL}${normalizedEndpoint}`, {
+                method: 'PUT',
+                headers,
+                body: body ? JSON.stringify(body) : undefined,
+                signal: AbortSignal.timeout(10000),
+                cache: 'no-store',
+            });
+        } catch (error) {
+            if (error instanceof DOMException && error.name === 'TimeoutError') {
+                throw new ApiError('درخواست شما منقضی شد. لطفاً دوباره تلاش کنید.');
+            }
+            throw new ApiError('خطا در ارتباط با سرور');
+        }
+
+        if (response.status === 401 || response.status === 419) {
+            this.clearTokensAndRedirect();
+            throw new ApiError('Unauthorized', response.status);
+        }
+
+        if (!response.ok) {
+            const data = await this.parseBodySafely(response);
+            const messageFromObject =
+                typeof data === 'object' && data !== null && 'message' in data &&
+                typeof (data as { message?: unknown }).message === 'string'
+                    ? (data as { message: string }).message
+                    : null;
+            const msg = messageFromObject || `HTTP error ${response.status}`;
+            throw new ApiError(msg, response.status, data);
+        }
+
+        const jsonResponse = await response.json();
+
+        // برگرداندن کل response (با message)
+        if (jsonResponse && typeof jsonResponse === 'object') {
+            return {
+                status: jsonResponse.status || response.status,
+                message: jsonResponse.message,
+                data: jsonResponse.data as T
+            };
+        }
+
+        return { status: response.status, data: jsonResponse as T };
+    }
 }
 
 export const apiClient = new ApiClient();
