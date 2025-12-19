@@ -76,7 +76,7 @@ export function ImportsList({
 
   if (loading) {
     return (
-      <div className="rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark dark:shadow-card sm:p-8">
+      <div className="rounded-lg border border-stroke bg-gray-1 p-6 dark:border-dark-3 dark:bg-dark-2 sm:p-8">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-dark dark:text-white">
             تاریخچه
@@ -94,7 +94,7 @@ export function ImportsList({
 
   if (imports.length === 0) {
     return (
-      <div className="rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark dark:shadow-card sm:p-8">
+      <div className="rounded-lg border border-stroke bg-gray-1 p-6 dark:border-dark-3 dark:bg-dark-2 sm:p-8">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-dark dark:text-white">
             تاریخچه
@@ -130,7 +130,7 @@ export function ImportsList({
   }
 
   return (
-    <div className="rounded-[10px] bg-white p-4 shadow-1 dark:bg-gray-dark dark:shadow-card sm:p-7.5">
+    <div className="rounded-lg border border-stroke bg-gray-1 p-4 dark:border-dark-3 dark:bg-dark-2 sm:p-7.5">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-dark dark:text-white">
           تاریخچه

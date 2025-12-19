@@ -96,38 +96,7 @@ export function UploadForm({ onUploadSuccess, onUploadError }: UploadFormProps) 
   };
 
   return (
-    <div className="rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark dark:shadow-card sm:p-8">
-      {/* Header Section */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-dark dark:text-white">
-            بارگذاری فایل
-          </h1>
-          <p className="mt-2 text-sm text-body-color dark:text-dark-6">
-            فایل‌های CSV، Excel یا JSON خود را آپلود کنید و به صورت خودکار پردازش شوند
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 rounded-lg bg-blue/10 px-4 py-2.5">
-          <svg
-            className="h-5 w-5 text-blue"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span className="text-sm font-medium text-blue">
-            حداکثر حجم: 10MB
-          </span>
-        </div>
-      </div>
-
+    <div className="rounded-lg border border-stroke bg-gray-1 p-6 dark:border-dark-3 dark:bg-dark-2 sm:p-8">
       <div
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
