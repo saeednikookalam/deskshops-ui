@@ -439,7 +439,8 @@ export default function MixinPageContent() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Edit Token Modal */}
