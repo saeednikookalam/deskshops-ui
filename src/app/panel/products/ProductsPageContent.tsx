@@ -204,7 +204,7 @@ export default function ProductsPageContent() {
   const getShopTypeLabel = (type: number): string => {
     switch (type) {
       case 1:
-        return "بسلام";
+        return "باسلام";
       case 2:
         return "دیجی‌کالا";
       case 3:

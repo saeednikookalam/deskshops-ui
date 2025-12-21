@@ -51,7 +51,7 @@ export const STATIC_NAV_DATA: NavSection[] = [
         items: [],
       },
       {
-        title: "برنامک ها",
+        title: "پلاگین ها",
         icon: Icons.PieChart,
         url: "/panel/plugins",
         items: [],
