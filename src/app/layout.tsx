@@ -9,6 +9,7 @@ import type { PropsWithChildren } from "react";
 import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
 import { Vazirmatn } from "next/font/google";
+import Script from "next/script";
 
 const vazirmatn = Vazirmatn({
   subsets: ["arabic"],
@@ -29,6 +30,15 @@ export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
       <body className={`${vazirmatn.className} overflow-x-hidden`}>
+        <Script id="clarity-script" strategy="afterInteractive">
+          {`
+            (function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "ut1traw404");
+          `}
+        </Script>
         <Providers>
           <NextTopLoader color="#5750F1" showSpinner={false} />
           {children}
