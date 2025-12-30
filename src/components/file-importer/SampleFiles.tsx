@@ -4,6 +4,34 @@ interface SampleFilesProps {
   operationType: 'update' | 'create';
 }
 
+interface CreateProductSample {
+  shop_id: string;
+  name: string;
+  category_id: string;
+  preparation_days: string;
+  package_weight: string;
+  photo_urls: string;
+  status: string;
+  sku: string;
+  brief: string;
+  description: string;
+  primary_price: string;
+  stock: string;
+  weight: string;
+  keywords: string;
+}
+
+interface UpdateProductSample {
+  shop_id: string;
+  shop_product_id: string;
+  name: string;
+  primary_price: string;
+  price: string;
+  stock: string;
+  status: string;
+  preparation_days: string;
+}
+
 export function SampleFiles({ operationType }: SampleFilesProps) {
   const downloadSampleCSV = () => {
     let csvContent: string;
@@ -28,7 +56,7 @@ export function SampleFiles({ operationType }: SampleFilesProps) {
   };
 
   const downloadSampleJSON = () => {
-    let jsonContent: any[];
+    let jsonContent: CreateProductSample[] | UpdateProductSample[];
 
     if (operationType === 'create') {
       jsonContent = [

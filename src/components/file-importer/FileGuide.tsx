@@ -48,12 +48,12 @@ export function FileGuide({ operationType }: FileGuideProps) {
                 <tr className="border-b border-stroke dark:border-dark-3">
                   <td dir="ltr" className="py-2 font-mono text-primary text-right">preparation_days</td>
                   <td className="py-2 text-right">string</td>
-                  <td className="py-2 text-right">روزهای آماده‌سازی (عدد >= 0)</td>
+                  <td className="py-2 text-right">روزهای آماده‌سازی (عدد {'>='} 0)</td>
                 </tr>
                 <tr className="border-b border-stroke dark:border-dark-3">
                   <td dir="ltr" className="py-2 font-mono text-primary text-right">package_weight</td>
                   <td className="py-2 text-right">string</td>
-                  <td className="py-2 text-right">وزن بسته‌بندی به گرم (عدد >= 0)</td>
+                  <td className="py-2 text-right">وزن بسته‌بندی به گرم (عدد {'>='} 0)</td>
                 </tr>
                 <tr>
                   <td dir="ltr" className="py-2 font-mono text-primary text-right">photo_urls</td>
@@ -103,17 +103,17 @@ export function FileGuide({ operationType }: FileGuideProps) {
                 <tr className="border-b border-stroke dark:border-dark-3">
                   <td dir="ltr" className="py-2 font-mono text-primary text-right">primary_price</td>
                   <td className="py-2 text-right">string</td>
-                  <td className="py-2 text-right">قیمت اصلی (ریال، عدد >= 0)</td>
+                  <td className="py-2 text-right">قیمت اصلی (ریال، عدد {'>='} 0)</td>
                 </tr>
                 <tr className="border-b border-stroke dark:border-dark-3">
                   <td dir="ltr" className="py-2 font-mono text-primary text-right">stock</td>
                   <td className="py-2 text-right">string</td>
-                  <td className="py-2 text-right">موجودی (عدد >= 0)</td>
+                  <td className="py-2 text-right">موجودی (عدد {'>='} 0)</td>
                 </tr>
                 <tr className="border-b border-stroke dark:border-dark-3">
                   <td dir="ltr" className="py-2 font-mono text-primary text-right">weight</td>
                   <td className="py-2 text-right">string</td>
-                  <td className="py-2 text-right">وزن محصول به گرم (عدد >= 0)</td>
+                  <td className="py-2 text-right">وزن محصول به گرم (عدد {'>='} 0)</td>
                 </tr>
                 <tr>
                   <td dir="ltr" className="py-2 font-mono text-primary text-right">keywords</td>
@@ -135,7 +135,7 @@ export function FileGuide({ operationType }: FileGuideProps) {
               <p className="font-semibold mb-2">قوانین اعتبارسنجی:</p>
               <ul className="list-disc list-inside space-y-1">
                 <li>همه فیلدهای الزامی باید وجود داشته باشند</li>
-                <li>فیلدهای عددی باید عدد باشند و >= 0</li>
+                <li>فیلدهای عددی باید عدد باشند و {'>='} 0</li>
                 <li>photo_urls باید حداقل یک آدرس تصویر داشته باشد</li>
                 <li>status فقط &quot;active&quot; یا &quot;inactive&quot;</li>
                 <li><strong>نباید</strong> فیلد shop_product_id داشته باشد (فقط برای به‌روزرسانی)</li>
