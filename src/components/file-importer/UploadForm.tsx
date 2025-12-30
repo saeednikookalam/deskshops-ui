@@ -4,11 +4,12 @@ import { useState, useRef } from "react";
 import { fileImporterService } from "@/services/file-importer";
 
 interface UploadFormProps {
+  operationType: 'update' | 'create';
   onUploadSuccess: () => void;
   onUploadError: (error: string) => void;
 }
 
-export function UploadForm({ onUploadSuccess, onUploadError }: UploadFormProps) {
+export function UploadForm({ operationType, onUploadSuccess, onUploadError }: UploadFormProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -70,7 +71,7 @@ export function UploadForm({ onUploadSuccess, onUploadError }: UploadFormProps) 
 
     try {
       setUploading(true);
-      await fileImporterService.uploadFile(selectedFile);
+      await fileImporterService.uploadFile(selectedFile, operationType);
 
       // If no error thrown, upload was successful
       setSelectedFile(null);
@@ -136,7 +137,9 @@ export function UploadForm({ onUploadSuccess, onUploadError }: UploadFormProps) 
             </div>
 
             <p className="mb-2 text-base font-medium text-dark dark:text-white">
-              فایل را اینجا بکشید یا کلیک کنید
+              {operationType === 'create'
+                ? 'فایل را برای ایجاد محصولات جدید بارگذاری کنید'
+                : 'فایل را برای به‌روزرسانی محصولات بارگذاری کنید'}
             </p>
             <p className="text-sm text-body-color dark:text-dark-6">
               فرمت‌های پشتیبانی شده: CSV, Excel, JSON (حداکثر 10MB)

@@ -58,9 +58,10 @@ class FileImporterService {
   /**
    * Upload a file (CSV, Excel, or JSON)
    */
-  async uploadFile(file: File): Promise<ImportData> {
+  async uploadFile(file: File, operationType: 'update' | 'create' = 'update'): Promise<ImportData> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('operation_type', operationType === 'create' ? 'product_create' : 'product');
 
     const data = await apiClient.uploadFile<ImportData>('/file-importer/upload', formData, 30000);
 
