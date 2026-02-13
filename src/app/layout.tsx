@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
-      <body className={`${vazirmatn.className} overflow-x-hidden`}>
+      <body className={`${vazirmatn.className} overflow-x-hidden`} suppressHydrationWarning>
         <Script id="clarity-script" strategy="afterInteractive">
           {`
             (function(c,l,a,r,i,t,y){

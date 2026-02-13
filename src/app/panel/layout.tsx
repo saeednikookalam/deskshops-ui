@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/Layouts/sidebar";
 import { Header } from "@/components/Layouts/header";
 import { PluginMenuProvider } from "@/contexts/plugin-menu-context";
 import { UserProvider } from "@/contexts/user-context";
+import { ShopProvider } from "@/contexts/shop-context";
 import type { PropsWithChildren } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -41,20 +42,22 @@ export default function PanelLayout({ children }: PropsWithChildren) {
   return (
     <PluginMenuProvider>
       <UserProvider>
-        <div className="flex min-h-screen">
-          <Sidebar />
+        <ShopProvider>
+          <div className="flex min-h-screen">
+            <Sidebar />
 
-          <div className="w-full bg-gray-2 dark:bg-[#020d1a]">
-            <Header />
+            <div className="w-full bg-gray-2 dark:bg-[#020d1a]">
+              <Header />
 
-            <main className="isolate mx-auto w-full max-w-screen-2xl overflow-hidden p-4 md:p-6 2xl:p-10">
-              {children}
-            </main>
+              <main className="isolate mx-auto w-full max-w-screen-2xl overflow-hidden p-4 md:p-6 2xl:p-10">
+                {children}
+              </main>
+            </div>
           </div>
-        </div>
 
-        {/* Name checker component */}
-        <NameChecker />
+          {/* Name checker component */}
+          <NameChecker />
+        </ShopProvider>
       </UserProvider>
     </PluginMenuProvider>
   );

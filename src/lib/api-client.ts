@@ -1,6 +1,7 @@
 import {clearTokens, getToken} from './token-manager';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const SHOP_STATE_STORAGE_KEY = 'shop-state';
 
 
 class ApiError extends Error {
@@ -30,6 +31,27 @@ class ApiClient {
         return endpoint.endsWith('/') && endpoint !== '/' ? endpoint.slice(0, -1) : endpoint;
     }
 
+    /**
+     * Get the currently selected shop ID from localStorage
+     * Returns undefined if 'all' shops selected or no shop selected
+     */
+    private getShopId(): string | undefined {
+        if (typeof window === 'undefined') return undefined;
+
+        try {
+            const shopState = localStorage.getItem(SHOP_STATE_STORAGE_KEY);
+            if (!shopState) return undefined;
+
+            const { selectedShop } = JSON.parse(shopState);
+            // Don't send header for 'all' shops or null
+            if (selectedShop === 'all' || !selectedShop) return undefined;
+
+            return String(selectedShop);
+        } catch {
+            return undefined;
+        }
+    }
+
     private getAuthHeaders(): Record<string, string> {
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
@@ -39,6 +61,12 @@ class ApiClient {
             const token = getToken();
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            // Add shop_id header if a specific shop is selected
+            const shopId = this.getShopId();
+            if (shopId) {
+                headers['X-Shop-Id'] = shopId;
             }
         }
 

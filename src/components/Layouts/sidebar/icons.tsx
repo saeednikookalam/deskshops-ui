@@ -247,3 +247,23 @@ export function WebhookIcon(props: PropsType) {
     </svg>
   );
 }
+
+export function ShopIcon(props: PropsType) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="none"
+      {...props}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M5.25 3a.75.75 0 01.75-.75h12a.75.75 0 01.75.75v2.25h1.5a.75.75 0 010 1.5h-.75l-.812 8.12a2.75 2.75 0 01-2.738 2.38H7.1a2.75 2.75 0 01-2.737-2.38L3.55 6.75H2.75a.75.75 0 010-1.5h2.5V3zm1.5.75v1.5h10.5v-1.5H6.75zM5.06 6.75l.78 7.8a1.25 1.25 0 001.243 1.12h10.135a1.25 1.25 0 001.243-1.12l.78-7.8H5.06zM10 10a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 10zm4 0a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0114 10z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}

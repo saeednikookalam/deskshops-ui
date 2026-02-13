@@ -39,6 +39,13 @@ export const STATIC_NAV_DATA: NavSection[] = [
         items: [],
       },
       {
+        title: "فروشگاه‌های من",
+        icon: Icons.ShopIcon,
+        url: "/panel/shops",
+        items: [],
+        badge: "shops_count",
+      },
+      {
         title: "درخواست‌ها",
         icon: Icons.Calendar,
         url: "/panel/requests",
