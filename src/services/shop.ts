@@ -91,7 +91,9 @@ class ShopService {
         const response = await apiClient.post<{ data: InitShopConnectionResponse }>(
             `/shops/connect/init?shop_type_id=${shopTypeId}`
         );
-        return response.data as InitShopConnectionResponse;
+        // Return the entire response, which includes success, message, and data at top level
+        // handleResponse already processed the response
+        return response as any as InitShopConnectionResponse;
     }
 
     /**
