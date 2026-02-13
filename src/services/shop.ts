@@ -78,8 +78,10 @@ class ShopService {
      * Get all available shop types from shop_types table
      */
     async getShopTypes(): Promise<ShopType[]> {
-        const response = await apiClient.get<{ data: ShopType[] }>('/shops/types');
-        return response.data || [];
+        const response = await apiClient.get<{ data: ShopType[] }>('/shops/types') as any;
+        // Backend returns {status, message, data: [...]}
+        // handleResponse already extracts response.data, so response is the shop types array
+        return Array.isArray(response) ? response : [];
     }
 
     /**

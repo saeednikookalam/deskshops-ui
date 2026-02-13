@@ -23,13 +23,16 @@ export function AddShopModal({ isOpen, onClose, onSuccess }: AddShopModalProps) 
   useEffect(() => {
     if (isOpen) {
       console.log('[AddShopModal] Modal opened, loading shop types...');
+      console.log('[AddShopModal] isOpen =', isOpen);
       const loadShopTypes = async () => {
         try {
           console.log('[AddShopModal] Calling shopService.getShopTypes()');
           const types = await shopService.getShopTypes();
           console.log('[AddShopModal] Received shop types:', types);
+          console.log('[AddShopModal] Types array length:', Array.isArray(types) ? types.length : 'NOT ARRAY');
+          console.log('[AddShopModal] First type:', types?.[0]);
           setShopTypes(types);
-          console.log('[AddShopModal] State updated with', types.length, 'shop types');
+          console.log('[AddShopModal] State updated with', types?.length || 0, 'shop types');
         } catch (error) {
           console.error("Error loading shop types:", error);
           const errorMessage = error instanceof Error ? error.message : "خطا در بارگذاری انواع فروشگاه";
@@ -130,6 +133,11 @@ export function AddShopModal({ isOpen, onClose, onSuccess }: AddShopModalProps) 
   // Only show active shop types as available
   const availableShopTypes = shopTypes.filter(st => st.is_active);
   const unavailableShopTypes = shopTypes.filter(st => !st.is_active);
+
+  // Debug logging
+  console.log('[AddShopModal] shopTypes state:', shopTypes);
+  console.log('[AddShopModal] availableShopTypes:', availableShopTypes);
+  console.log('[AddShopModal] unavailableShopTypes:', unavailableShopTypes);
 
   return (
     <div className="fixed inset-0 z-[99999] overflow-y-auto">
