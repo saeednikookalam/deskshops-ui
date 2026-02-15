@@ -62,25 +62,23 @@ class ShopService {
      * Get user's shops with connection status
      */
     async getShops(): Promise<ShopsResponse> {
-        const response = await apiClient.get<{ data: ShopsResponse }>('/shops/with-status');
-        return response.data || { shops: [], total: 0 };
+        const response = await apiClient.get<ShopsResponse>('/shops/with-status');
+        return response || { shops: [], total: 0 };
     }
 
     /**
      * Get available marketplaces from shop_types table
      */
     async getMarketplaces(): Promise<Marketplace[]> {
-        const response = await apiClient.get<{ data: Marketplace[] }>('/shops/marketplaces');
-        return response.data || [];
+        const response = await apiClient.get<Marketplace[]>('/shops/marketplaces');
+        return response || [];
     }
 
     /**
      * Get all available shop types from shop_types table
      */
     async getShopTypes(): Promise<ShopType[]> {
-        const response = await apiClient.get<{ data: ShopType[] }>('/shops/types') as any;
-        // Backend returns {status, message, data: [...]}
-        // handleResponse already extracts response.data, so response is the shop types array
+        const response = await apiClient.get<ShopType[]>('/shops/types');
         return Array.isArray(response) ? response : [];
     }
 
@@ -88,20 +86,18 @@ class ShopService {
      * Initialize connection for a shop type
      */
     async initConnection(shopTypeId: number): Promise<InitShopConnectionResponse> {
-        const response = await apiClient.post<{ data: InitShopConnectionResponse }>(
+        const response = await apiClient.post<InitShopConnectionResponse>(
             `/shops/connect/init?shop_type_id=${shopTypeId}`
         );
-        // Return the entire response, which includes success, message, and data at top level
-        // handleResponse already processed the response
-        return response as any as InitShopConnectionResponse;
+        return response as InitShopConnectionResponse;
     }
 
     /**
      * Initiate OAuth connection for a specific marketplace (deprecated - use initConnection)
      */
     async initBasalamConnection(): Promise<InitConnectionResponse> {
-        const response = await apiClient.post<{ data: InitConnectionResponse }>('/shops/basalam/init');
-        return response.data as InitConnectionResponse;
+        const response = await apiClient.post<InitConnectionResponse>('/shops/basalam/init');
+        return response as InitConnectionResponse;
     }
 
     /**
