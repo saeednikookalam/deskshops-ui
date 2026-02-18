@@ -62,8 +62,16 @@ class ShopService {
      * Get user's shops with connection status
      */
     async getShops(): Promise<ShopsResponse> {
-        const response = await apiClient.get<ShopsResponse>('/shops/with-status');
-        return response || { shops: [], total: 0 };
+        const { data, meta } = await apiClient.getWithMeta<Shop[]>('/shops/with-status');
+        // A shop is considered active/connected if it has vendor_id
+        const shops = Array.isArray(data) ? data.map(shop => ({
+            ...shop,
+            is_active: !!shop.vendor_id
+        })) : [];
+        return {
+            shops,
+            total: meta?.total || 0
+        };
     }
 
     /**
