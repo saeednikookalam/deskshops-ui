@@ -35,13 +35,8 @@ export interface ShopsResponse {
 }
 
 interface ShopsWithStatusResponse {
-    data: {
-        shops: Shop[];
-        total: number;
-    };
-    meta?: {
-        total: number;
-    };
+    shops: Shop[];
+    total: number;
 }
 
 export interface InitConnectionResponse {
@@ -73,13 +68,11 @@ class ShopService {
      */
     async getShops(): Promise<ShopsResponse> {
         const response = await apiClient.getWithMeta<ShopsWithStatusResponse>('/shops/with-status');
-        const shops = response.data?.shops?.map(shop => ({
-            ...shop,
-            is_active: !!shop.vendor_id
-        })) || [];
+        const shops = response.data?.shops || [];
+        const total = response.data?.total ?? 0;
         return {
             shops,
-            total: response.data?.total || response.meta?.total || 0
+            total
         };
     }
 
