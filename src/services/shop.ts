@@ -34,6 +34,16 @@ export interface ShopsResponse {
     total: number;
 }
 
+interface ShopsWithStatusResponse {
+    data: {
+        shops: Shop[];
+        total: number;
+    };
+    meta?: {
+        total: number;
+    };
+}
+
 export interface InitConnectionResponse {
     auth_url: string;
 }
@@ -62,15 +72,14 @@ class ShopService {
      * Get user's shops with connection status
      */
     async getShops(): Promise<ShopsResponse> {
-        const { data, meta } = await apiClient.getWithMeta<Shop[]>('/shops/with-status');
-        // A shop is considered active/connected if it has vendor_id
-        const shops = Array.isArray(data) ? data.map(shop => ({
+        const response = await apiClient.getWithMeta<ShopsWithStatusResponse>('/shops/with-status');
+        const shops = response.data?.shops?.map(shop => ({
             ...shop,
             is_active: !!shop.vendor_id
-        })) : [];
+        })) || [];
         return {
             shops,
-            total: meta?.total || 0
+            total: response.data?.total || response.meta?.total || 0
         };
     }
 
