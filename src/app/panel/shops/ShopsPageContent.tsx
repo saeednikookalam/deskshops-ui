@@ -303,7 +303,7 @@ export default function ShopsPageContent() {
                     />
                   </svg>
                   <span className="text-sm font-medium text-dark dark:text-white">
-                    {shop.webhook_count || 0} وب‌هوک
+                    {shop.has_webhook ? 'وب‌هوک دارد' : 'وب‌هوک ندارد'}
                   </span>
                 </div>
                 <div className="h-4 w-px bg-stroke dark:bg-dark-3"></div>

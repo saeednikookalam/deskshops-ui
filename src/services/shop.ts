@@ -14,7 +14,7 @@ export interface Shop {
     logo?: string;
     vendor_id?: number;
     vendor_status?: number;
-    webhook_count?: number;
+    has_webhook?: boolean;
 }
 
 export interface MarketplaceInfo {
