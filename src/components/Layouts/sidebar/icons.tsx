@@ -269,6 +269,9 @@ export function MirrorIcon(props: PropsType) {
   );
 }
 
+// Alias for shop_mirror plugin
+export const ShopMirrorIcon = MirrorIcon;
+
 export function ShopIcon(props: PropsType) {
   return (
     <svg

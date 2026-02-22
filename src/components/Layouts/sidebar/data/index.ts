@@ -96,8 +96,8 @@ export function generateNavData(
         case 'webhook':
           icon = Icons.WebhookIcon;
           break;
-        case 'mirror':
-          icon = Icons.MirrorIcon;
+        case 'shop_mirror':
+          icon = Icons.ShopMirrorIcon;
           break;
         default:
           icon = Icons.PieChart;

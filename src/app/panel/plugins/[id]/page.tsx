@@ -86,6 +86,26 @@ const GoogleSheetIcon = (props: IconProps) => (
   </svg>
 );
 
+const ShopMirrorIcon = (props: IconProps) => (
+  <svg
+    width={24}
+    height={24}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="14" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <path d="M10 6.5h4M6.5 10v4M17.5 10v4M10 17.5h4" />
+  </svg>
+);
+
 const getPluginIcon = (pluginName: string) => {
   switch (pluginName) {
     case 'file_importer':
@@ -99,6 +119,9 @@ const getPluginIcon = (pluginName: string) => {
     case 'google_sheet':
     case 'google-sheet':
       return GoogleSheetIcon;
+    case 'shop_mirror':
+    case 'shop-mirror':
+      return ShopMirrorIcon;
     default:
       return null;
   }
@@ -197,6 +220,11 @@ export default function PluginDetailsPage({ params }: { params: Promise<{ id: st
           // If it's basalam plugin, redirect to main page
           if (plugin.name === 'basalam') {
             router.push('/panel/basalam');
+          }
+
+          // If it's shop_mirror plugin, redirect to shop_mirror page
+          if (plugin.name === 'shop_mirror' || plugin.name === 'shop-mirror') {
+            router.push('/panel/shop_mirror');
           }
         } catch (error) {
           console.error('Error adding plugin menu:', error);
