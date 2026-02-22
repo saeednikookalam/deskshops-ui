@@ -90,7 +90,7 @@ export function ShopProvider({ children }: PropsWithChildren) {
       setIsLoading(true);
       setError(null);
 
-      const response = await apiClient.get<any>('/shops/');
+      const response = await apiClient.get<any>('/shops');
       if (response.data && Array.isArray(response.data)) {
         const fetchedShops: Shop[] = response.data;
         setShops(fetchedShops);
